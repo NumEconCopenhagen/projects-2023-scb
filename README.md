@@ -1,4 +1,4 @@
-# \[Group name\]
+# \[ SCB \]
 
 **Group members:**
 - Konrad T.
