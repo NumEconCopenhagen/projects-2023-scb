@@ -1,9 +1,9 @@
 # \[Group name\]
 
 **Group members:**
-- A
-- B
-- C
+- Konrad T.
+- Carl S.
+- Felix P.
 
 This repository contains  
 1. Inaugural project. 
