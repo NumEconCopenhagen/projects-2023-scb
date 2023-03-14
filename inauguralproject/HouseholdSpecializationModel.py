@@ -90,7 +90,9 @@ class HouseholdSpecializationModelClass:
 
         # c. total consumption utility
         Q = C**par.omega*H**(1-par.omega)
-        utility = np.fmax(Q,1e-8)**(1-par.rho)/(1-par.rho) # bug: RuntimeWarning: invalid value encountered in reciprocal?
+
+        utility = np.fmax(Q,1e-8)**(1-par.rho)*(1-par.rho)**-1
+        # bug: utility = np.fmax(Q,1e-8)**(1-par.rho)/(1-par.rho) RuntimeWarning: invalid value encountered in reciprocal
 
         # d. disutlity of work
         epsilon_ = 1+1/par.epsilon
@@ -179,7 +181,7 @@ class HouseholdSpecializationModelClass:
 
         return opt_con
 
-    def solve_wF_vec(self,discrete=False):
+    def solve_wF_vec(self,discrete=False, do_print = False ):
         """ solve model for vector of female wages """
 
         par = self.par
@@ -189,7 +191,6 @@ class HouseholdSpecializationModelClass:
         for i, wF in enumerate(par.wF_vec):
 
             par.wF = wF
-            print(f'wF = {wF}')
 
             solution = self.solve(do_print=False)
 
@@ -201,8 +202,16 @@ class HouseholdSpecializationModelClass:
         # b. reset wF value
         par.wF = 1 
 
-        return sol 
+        if do_print:
+            print('start solve_wF_vec()')
+            print(f'wf_vec = {par.wF_vec}')
+            print(f'LM_vec = {sol.LM_vec}')
+            print(f'HM_vec = {sol.HM_vec}')
+            print(f'LF_vec = {sol.LF_vec}')
+            print(f'HF_vec = {sol.HF_vec}')
+            print('end solve_wF_vec()')
 
+        return sol 
 
     def run_regression(self):
         """ run regression """
