@@ -65,18 +65,15 @@ class HouseholdSpecializationModelClass:
 
         if par.sigma == 0:
             H = np.fmin(HM,HF)
-            # print(f'home_prod tror siger sigma 0')
             return H
         
         if par.sigma == 1:
             H = HM**(1-par.alpha)*HF**par.alpha
-            # print(f'home_prod tror siger sigma 1')
             return H
 
         else:
             potens = (par.sigma-1)/par.sigma 
             H = ((1-par.alpha)*HM**potens * HF**potens)**potens**-1
-            # print(f'home_prod tror siger sigma andet')
             return H 
 
     def calc_utility(self,LM,HM,LF,HF):
@@ -93,7 +90,7 @@ class HouseholdSpecializationModelClass:
 
         # c. total consumption utility
         Q = C**par.omega*H**(1-par.omega)
-        utility = np.fmax(Q,1e-8)**(1-par.rho)/(1-par.rho)
+        utility = np.fmax(Q,1e-8)**(1-par.rho)/(1-par.rho) # bug: RuntimeWarning: invalid value encountered in reciprocal?
 
         # d. disutlity of work
         epsilon_ = 1+1/par.epsilon
@@ -136,9 +133,11 @@ class HouseholdSpecializationModelClass:
 
         # e. print
         if do_print:
+            print('start solve_discrete()')
             for k,v in opt.__dict__.items():
                 print(f'{k} = {v:6.4f}')
-
+            print('end solve_discrete()')
+        
         return opt
 
     def solve(self,do_print=False):
@@ -157,7 +156,7 @@ class HouseholdSpecializationModelClass:
         # b. constraints (violated if negative) and bounds. x is an array
         constraints = [{'type': 'ineq', 'fun': lambda x:  24-x[0]-x[1]},
                        {'type': 'ineq', 'fun': lambda x:  24-x[2]-x[3]}]
-        bounds = ((0,24),(0,24),(0,24),(0,24))
+        bounds = ((1e-8,24),(1e-8,24),(1e-8,24),(1e-8,24))
 
         initial_guess = [1,1,1,1]
 
@@ -173,8 +172,10 @@ class HouseholdSpecializationModelClass:
         opt_con.HF = sol_case2.x[3]
 
         if do_print:
+            print('start solve()')
             for k,v in opt_con.__dict__.items():
                 print(f'{k} = {v:6.4f}')
+            print('end solve()')
 
         return opt_con
 
@@ -182,16 +183,25 @@ class HouseholdSpecializationModelClass:
         """ solve model for vector of female wages """
 
         par = self.par
+        sol = self.sol
 
-        for wF in par.wF_vec:
+        # a. loop solution over specified wF vector 
+        for i, wF in enumerate(par.wF_vec):
+
             par.wF = wF
             print(f'wF = {wF}')
-            self.solve(do_print=True)
 
-        # KJT: how do we return this?
-        # i have come up with a solution 
+            solution = self.solve(do_print=False)
 
-        pass
+            sol.LM_vec[i] = solution.LM
+            sol.HM_vec[i] = solution.HM
+            sol.LF_vec[i] = solution.LF
+            sol.HF_vec[i] = solution.HF
+
+        # b. reset wF value
+        par.wF = 1 
+
+        return sol 
 
 
     def run_regression(self):
