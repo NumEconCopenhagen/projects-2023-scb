@@ -187,29 +187,18 @@ class HouseholdSpecializationModelClass:
         par = self.par
         sol = self.sol
 
-        if discrete:
-            for i, wF in enumerate(par.wF_vec):
+        for i, wF in enumerate(par.wF_vec):
+            par.wF = wF
 
-                par.wF = wF
-
+            if discrete:
                 solution = self.solve_discrete(do_print=False)
-
-                sol.LM_vec[i] = solution.LM
-                sol.HM_vec[i] = solution.HM
-                sol.LF_vec[i] = solution.LF
-                sol.HF_vec[i] = solution.HF
-
-        else:
-            for i, wF in enumerate(par.wF_vec):
-
-                par.wF = wF
-
+            else:
                 solution = self.solve(do_print=False)
 
-                sol.LM_vec[i] = solution.LM
-                sol.HM_vec[i] = solution.HM
-                sol.LF_vec[i] = solution.LF
-                sol.HF_vec[i] = solution.HF
+            sol.LM_vec[i] = solution.LM
+            sol.HM_vec[i] = solution.HM
+            sol.LF_vec[i] = solution.LF
+            sol.HF_vec[i] = solution.HF
 
         # b. reset wF value
         par.wF = 1 
