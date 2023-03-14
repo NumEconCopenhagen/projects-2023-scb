@@ -78,7 +78,7 @@ class HouseholdSpecializationModelClass:
 
     def calc_utility(self,LM,HM,LF,HF):
         """ calculate utility """
-
+        
         par = self.par
         sol = self.sol
 
