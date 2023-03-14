@@ -189,6 +189,7 @@ class HouseholdSpecializationModelClass:
             self.solve(do_print=True)
 
         # KJT: how do we return this?
+        # i have come up with a solution 
 
         pass
 
