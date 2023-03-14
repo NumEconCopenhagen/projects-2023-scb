@@ -91,8 +91,8 @@ class HouseholdSpecializationModelClass:
         # c. total consumption utility
         Q = C**par.omega*H**(1-par.omega)
 
-        utility = np.fmax(Q,1e-8)**(1-par.rho)*(1-par.rho)**-1
-        # bug: utility = np.fmax(Q,1e-8)**(1-par.rho)/(1-par.rho) RuntimeWarning: invalid value encountered in reciprocal
+        # utility = np.fmax(Q,1e-8)**(1-par.rho)*(1-par.rho)**-1
+        utility = np.fmax(Q,1e-8)**(1-par.rho)/(1-par.rho) # RuntimeWarning: invalid value encountered in reciprocal
 
         # d. disutlity of work
         epsilon_ = 1+1/par.epsilon
@@ -187,12 +187,13 @@ class HouseholdSpecializationModelClass:
         par = self.par
         sol = self.sol
 
-        # a. loop solution over specified wF vector 
         for i, wF in enumerate(par.wF_vec):
-
             par.wF = wF
 
-            solution = self.solve(do_print=False)
+            if discrete:
+                solution = self.solve_discrete(do_print=False)
+            else:
+                solution = self.solve(do_print=False)
 
             sol.LM_vec[i] = solution.LM
             sol.HM_vec[i] = solution.HM
