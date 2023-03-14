@@ -91,8 +91,8 @@ class HouseholdSpecializationModelClass:
         # c. total consumption utility
         Q = C**par.omega*H**(1-par.omega)
 
-        utility = np.fmax(Q,1e-8)**(1-par.rho)*(1-par.rho)**-1
-        # bug: utility = np.fmax(Q,1e-8)**(1-par.rho)/(1-par.rho) RuntimeWarning: invalid value encountered in reciprocal
+        # utility = np.fmax(Q,1e-8)**(1-par.rho)*(1-par.rho)**-1
+        utility = np.fmax(Q,1e-8)**(1-par.rho)/(1-par.rho) # RuntimeWarning: invalid value encountered in reciprocal
 
         # d. disutlity of work
         epsilon_ = 1+1/par.epsilon
