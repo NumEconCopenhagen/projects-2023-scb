@@ -6,6 +6,7 @@ from scipy import optimize
 
 import pandas as pd 
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D # for 3d figures
 
 class HouseholdSpecializationModelClass:
 
@@ -181,7 +182,7 @@ class HouseholdSpecializationModelClass:
 
         return opt_con
 
-    def solve_wF_vec(self,discrete=False, do_print = False ):
+    def solve_wF_vec(self, discrete=False, do_print = False ):
         """ solve model for vector of female wages """
 
         par = self.par
@@ -225,7 +226,56 @@ class HouseholdSpecializationModelClass:
         A = np.vstack([np.ones(x.size),x]).T
         sol.beta0,sol.beta1 = np.linalg.lstsq(A,y,rcond=None)[0]
     
-    def estimate(self,alpha=None,sigma=None):
+    def estimate(self,alpha=None,sigma=None, do_plot = False):
         """ estimate alpha and sigma """
+        # its not right, since it really depends on initial guess
 
-        pass
+        est_sol = SimpleNamespace() 
+
+        par = self.par
+        sol = self.sol
+
+        def min_function():
+            return (sol.beta0-par.beta0_target)**2+(sol.beta1-par.beta1_target)**2
+        
+        # a. objective function
+        def objective(x):
+            alpha = x[0]
+            sigma = x[1]
+
+            par.alpha = alpha 
+            par.sigma = sigma 
+
+            self.solve_wF_vec()
+            self.run_regression()
+
+            return min_function()
+        
+        # b. constraints (violated if negative) and bounds. x is an array
+        # constraints = [{'type': 'ineq', 'fun': lambda x:  24-x[0]-x[1]},
+        #                {'type': 'ineq', 'fun': lambda x:  24-x[2]-x[3]}]
+        bounds = ((1e-8,1),(1e-8,10))
+
+        initial_guess = [0.234,0.2]
+
+        # c. call solver, use SLSQP
+        solution = optimize.minimize(objective, initial_guess,
+                                    method='SLSQP', bounds=bounds)
+        
+        # d. unpack solution
+        est_sol.alpha = solution.x[0]
+        est_sol.sigma = solution.x[1]
+
+        if do_plot:
+
+            fig = plt.figure() # create the figure
+            ax = fig.add_subplot(1,1,1,projection='3d') # create a 3d type axis 
+            ax.plot_surface(x1_values,x2_values,u_values); # create surface plot in the axis
+            # note: fig.add_subplot(a,b,c) creates the c'th subplot in a grid of a times b plots
+
+
+        return est_sol
+
+
+        
+
