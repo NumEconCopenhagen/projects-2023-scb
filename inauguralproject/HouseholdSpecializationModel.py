@@ -213,6 +213,7 @@ class HouseholdSpecializationModelClass:
             print(f'HF_vec = {sol.HF_vec}')
             print('end solve_wF_vec()')
 
+        print(f'in solve_wF_vec, HF_vec = {sol.HF_vec}')
         return sol 
 
     def run_regression(self):
@@ -220,6 +221,8 @@ class HouseholdSpecializationModelClass:
 
         par = self.par
         sol = self.sol
+
+        print(f'in run_regression, HF_vec: {sol.HF_vec}')
 
         x = np.log(par.wF_vec)
         y = np.log(sol.HF_vec/sol.HM_vec)
@@ -248,7 +251,7 @@ class HouseholdSpecializationModelClass:
 
             self.solve_wF_vec()
             self.run_regression()
-
+            print(f'min:function value {min_function()}')
             return min_function()
         
         # b. constraints (violated if negative) and bounds. x is an array
@@ -256,11 +259,14 @@ class HouseholdSpecializationModelClass:
         #                {'type': 'ineq', 'fun': lambda x:  24-x[2]-x[3]}]
         bounds = ((1e-8,1),(1e-8,10))
 
-        initial_guess = [0.234,0.2]
+        initial_guess = [0.234,1]
+
+        # change so we jump mote around
+        options={'disp': True ,'eps' : 0.1, 'iter' : 25}
 
         # c. call solver, use SLSQP
         solution = optimize.minimize(objective, initial_guess,
-                                    method='SLSQP', bounds=bounds)
+                                    method='SLSQP', bounds=bounds, options=options)
         
         # d. unpack solution
         est_sol.alpha = solution.x[0]
