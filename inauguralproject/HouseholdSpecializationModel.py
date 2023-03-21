@@ -74,7 +74,7 @@ class HouseholdSpecializationModelClass:
 
         else:
             potens = (par.sigma-1)/par.sigma 
-            H = ((1-par.alpha)*HM**potens * HF**potens)**potens**-1
+            H = ((1-par.alpha)*HM**potens + par.alpha * HF**potens)**potens**-1
             return H 
 
     def calc_utility(self,LM,HM,LF,HF):
