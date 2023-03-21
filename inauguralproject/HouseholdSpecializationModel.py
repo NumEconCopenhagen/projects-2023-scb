@@ -164,10 +164,13 @@ class HouseholdSpecializationModelClass:
         initial_guess = [1,1,1,1]
 
         # c. call solver, use SLSQP
-        sol_case2 = optimize.minimize(
-            value_of_choice, initial_guess,
-            method='SLSQP', bounds=bounds, constraints=constraints)
-        
+        sol_case2 = optimize.minimize(value_of_choice, 
+                                      initial_guess,
+                                      method='SLSQP', 
+                                      bounds=bounds, 
+                                      constraints=constraints,
+                                      tol=1e-10) # note, tol=1e-5 or None, changes result in Q3 
+
         # d. unpack solution
         opt_con.LM = sol_case2.x[0]
         opt_con.HM = sol_case2.x[1]
