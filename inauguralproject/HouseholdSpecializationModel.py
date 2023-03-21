@@ -6,6 +6,7 @@ from scipy import optimize
 
 import pandas as pd 
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D # for 3d figures
 
 class HouseholdSpecializationModelClass:
 
@@ -73,7 +74,7 @@ class HouseholdSpecializationModelClass:
 
         else:
             potens = (par.sigma-1)/par.sigma 
-            H = ((1-par.alpha)*HM**potens * HF**potens)**potens**-1
+            H = ((1-par.alpha)*HM**potens + par.alpha * HF**potens)**potens**-1
             return H 
 
     def calc_utility(self,LM,HM,LF,HF):
@@ -181,7 +182,7 @@ class HouseholdSpecializationModelClass:
 
         return opt_con
 
-    def solve_wF_vec(self,discrete=False, do_print = False ):
+    def solve_wF_vec(self, discrete=False, do_print = False ):
         """ solve model for vector of female wages """
 
         par = self.par
@@ -212,6 +213,7 @@ class HouseholdSpecializationModelClass:
             print(f'HF_vec = {sol.HF_vec}')
             print('end solve_wF_vec()')
 
+        print(f'in solve_wF_vec, HF_vec = {sol.HF_vec}')
         return sol 
 
     def run_regression(self):
@@ -220,12 +222,79 @@ class HouseholdSpecializationModelClass:
         par = self.par
         sol = self.sol
 
+        print(f'in run_regression, HF_vec: {sol.HF_vec}')
+
         x = np.log(par.wF_vec)
         y = np.log(sol.HF_vec/sol.HM_vec)
         A = np.vstack([np.ones(x.size),x]).T
         sol.beta0,sol.beta1 = np.linalg.lstsq(A,y,rcond=None)[0]
-    
-    def estimate(self,alpha=None,sigma=None):
-        """ estimate alpha and sigma """
 
-        pass
+    
+    def min_function(self):
+
+        sol = self.sol
+        par = self.par
+
+        return (sol.beta0-par.beta0_target)**2+(sol.beta1-par.beta1_target)**2
+    
+    def estimate(self,alpha=None,sigma=None, do_plot = False):
+        """ estimate alpha and sigma """
+        # its not right, since it really depends on initial guess
+
+        est_sol = SimpleNamespace() 
+
+        par = self.par
+        sol = self.sol
+
+        # a. objective function
+        def objective(x):
+            alpha = x[0]
+            sigma = x[1]
+
+            par.alpha = alpha 
+            par.sigma = sigma 
+
+            self.solve_wF_vec()
+            self.run_regression()
+            min = self.min_function()
+
+            print(f'alpha, sigma    = ({par.alpha, par.sigma})')
+            print(f'min_function    = {min}')
+            print(f'beta0, beta1    = {sol.beta0, sol.beta1}')
+            return min
+        
+        bounds = ((1e-8,1),(1e-8,100)) # should be inf
+
+        # result depends on initial guess
+        initial_guess = [0.001,12]
+        # alpha 0.5 = 0.2831495762087326
+        # alpha 0.9 = 0.8991621461685471
+        # alpha 0.1 = 0.8991621461685471
+        # alpha 0.01= 0.010981782369274704
+
+        # change so we jump mote around
+        # options={'disp': True ,'eps' : 0.1, 'iter' : 25}
+
+        # c. call solver, use SLSQP
+        solution = optimize.minimize(objective, 
+                                     x0 = initial_guess,
+                                     method='SLSQP',
+                                     bounds=bounds)
+        
+        # d. unpack solution
+        est_sol.alpha = solution.x[0]
+        est_sol.sigma = solution.x[1]
+
+        if do_plot:
+
+            fig = plt.figure() # create the figure
+            ax = fig.add_subplot(1,1,1,projection='3d') # create a 3d type axis 
+            ax.plot_surface(x1_values,x2_values,u_values); # create surface plot in the axis
+            # note: fig.add_subplot(a,b,c) creates the c'th subplot in a grid of a times b plots
+
+
+        return est_sol
+
+
+        
+
