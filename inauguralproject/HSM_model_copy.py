@@ -263,7 +263,7 @@ class HouseholdSpecializationModelClass:
         
         x0 = [par.__dict__[parname] for parname in parnames]
         
-        bounds = ((0,1),(0,None))
+        bounds = ((0,1),(0,100))
 
         res = optimize.minimize(obj,x0,bounds=bounds,method='nelder-mead',args=(parnames))
         assert res.success
