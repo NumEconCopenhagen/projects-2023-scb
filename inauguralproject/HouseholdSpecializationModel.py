@@ -228,6 +228,14 @@ class HouseholdSpecializationModelClass:
         y = np.log(sol.HF_vec/sol.HM_vec)
         A = np.vstack([np.ones(x.size),x]).T
         sol.beta0,sol.beta1 = np.linalg.lstsq(A,y,rcond=None)[0]
+
+    
+    def min_function(self):
+
+        sol = self.sol
+        par = self.par
+
+        return (sol.beta0-par.beta0_target)**2+(sol.beta1-par.beta1_target)**2
     
     def estimate(self,alpha=None,sigma=None, do_plot = False):
         """ estimate alpha and sigma """
@@ -238,9 +246,6 @@ class HouseholdSpecializationModelClass:
         par = self.par
         sol = self.sol
 
-        def min_function():
-            return (sol.beta0-par.beta0_target)**2+(sol.beta1-par.beta1_target)**2
-        
         # a. objective function
         def objective(x):
             alpha = x[0]
@@ -251,22 +256,30 @@ class HouseholdSpecializationModelClass:
 
             self.solve_wF_vec()
             self.run_regression()
-            print(f'min:function value {min_function()}')
-            return min_function()
-        
-        # b. constraints (violated if negative) and bounds. x is an array
-        # constraints = [{'type': 'ineq', 'fun': lambda x:  24-x[0]-x[1]},
-        #                {'type': 'ineq', 'fun': lambda x:  24-x[2]-x[3]}]
-        bounds = ((1e-8,1),(1e-8,10))
+            min = self.min_function()
 
-        initial_guess = [0.234,1]
+            print(f'alpha, sigma    = ({par.alpha, par.sigma})')
+            print(f'min_function    = {min}')
+            print(f'beta0, beta1    = {sol.beta0, sol.beta1}')
+            return min
+        
+        bounds = ((1e-8,1),(1e-8,100)) # should be inf
+
+        # result depends on initial guess
+        initial_guess = [0.001,12]
+        # alpha 0.5 = 0.2831495762087326
+        # alpha 0.9 = 0.8991621461685471
+        # alpha 0.1 = 0.8991621461685471
+        # alpha 0.01= 0.010981782369274704
 
         # change so we jump mote around
-        options={'disp': True ,'eps' : 0.1, 'iter' : 25}
+        # options={'disp': True ,'eps' : 0.1, 'iter' : 25}
 
         # c. call solver, use SLSQP
-        solution = optimize.minimize(objective, initial_guess,
-                                    method='SLSQP', bounds=bounds, options=options)
+        solution = optimize.minimize(objective, 
+                                     x0 = initial_guess,
+                                     method='SLSQP',
+                                     bounds=bounds)
         
         # d. unpack solution
         est_sol.alpha = solution.x[0]
