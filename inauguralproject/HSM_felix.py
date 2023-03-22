@@ -243,6 +243,10 @@ class HouseholdSpecializationModelClass:
         self.solve_wF_vec()
         self.run_regression()
 
+        print(f'alpha = {par.alpha}, sigma = {par.sigma}')
+        print(f'beta0 = {sol.beta0}, beta1 = {sol.beta1}')
+        print(f'min = {(0.4-sol.beta0)**2 + (-0.1-sol.beta1)**2}')
+
         return  (0.4-sol.beta0)**2 + (-0.1-sol.beta1)**2
     
 
