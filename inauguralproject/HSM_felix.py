@@ -229,7 +229,7 @@ class HouseholdSpecializationModelClass:
         A = np.vstack([np.ones(x.size),x]).T
         sol.beta0,sol.beta1 = np.linalg.lstsq(A,y,rcond=None)[0]
 
-    def objective_function(self, x)
+    def objective_function(self, x):
 
         par = self.par 
         sol = self.sol
@@ -240,11 +240,11 @@ class HouseholdSpecializationModelClass:
         par.alpha = alpha 
         par.sigma = sigma 
         
-
         self.solve_wF_vec()
         self.run_regression()
 
         return  (0.4-sol.beta0)**2 + (-0.1-sol.beta1)**2
+    
 
     
     # def min_function(self):
