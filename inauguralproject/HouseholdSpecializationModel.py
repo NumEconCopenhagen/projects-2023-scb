@@ -148,8 +148,7 @@ class HouseholdSpecializationModelClass:
      
         opt_con = SimpleNamespace()
 
-        # Now we use the library scipy to do the heavy lifting <3
-        
+        # 1. scipy
         # a. objective function
         def value_of_choice(x):
             # note: x is an array, but calc_utility takes scalars
@@ -164,10 +163,13 @@ class HouseholdSpecializationModelClass:
         initial_guess = [1,1,1,1]
 
         # c. call solver, use SLSQP
-        sol_case2 = optimize.minimize(
-            value_of_choice, initial_guess,
-            method='SLSQP', bounds=bounds, constraints=constraints)
-        
+        sol_case2 = optimize.minimize(value_of_choice, 
+                                      initial_guess,
+                                      method='SLSQP', 
+                                      bounds=bounds, 
+                                      constraints=constraints,
+                                      tol=1e-10) # note, tol=1e-5 or None, changes result in Q3 
+
         # d. unpack solution
         opt_con.LM = sol_case2.x[0]
         opt_con.HM = sol_case2.x[1]
@@ -213,7 +215,7 @@ class HouseholdSpecializationModelClass:
             print(f'HF_vec = {sol.HF_vec}')
             print('end solve_wF_vec()')
 
-        print(f'in solve_wF_vec, HF_vec = {sol.HF_vec}')
+        # print(f'in solve_wF_vec, HF_vec = {sol.HF_vec}')
         return sol 
 
     def run_regression(self):
@@ -222,7 +224,7 @@ class HouseholdSpecializationModelClass:
         par = self.par
         sol = self.sol
 
-        print(f'in run_regression, HF_vec: {sol.HF_vec}')
+        # print(f'in run_regression, HF_vec: {sol.HF_vec}')
 
         x = np.log(par.wF_vec)
         y = np.log(sol.HF_vec/sol.HM_vec)
@@ -258,40 +260,33 @@ class HouseholdSpecializationModelClass:
             self.run_regression()
             min = self.min_function()
 
-            print(f'alpha, sigma    = ({par.alpha, par.sigma})')
-            print(f'min_function    = {min}')
-            print(f'beta0, beta1    = {sol.beta0, sol.beta1}')
+            # print(f'alpha, sigma    = ({par.alpha, par.sigma})')
+            # print(f'min_function    = {min}')
+            # print(f'beta0, beta1    = {sol.beta0, sol.beta1}')
+
             return min
         
         bounds = ((1e-8,1),(1e-8,100)) # should be inf
 
         # result depends on initial guess
-        initial_guess = [0.001,12]
-        # alpha 0.5 = 0.2831495762087326
-        # alpha 0.9 = 0.8991621461685471
-        # alpha 0.1 = 0.8991621461685471
-        # alpha 0.01= 0.010981782369274704
-
-        # change so we jump mote around
-        # options={'disp': True ,'eps' : 0.1, 'iter' : 25}
+        initial_guess = [0.99,0.1]
 
         # c. call solver, use SLSQP
         solution = optimize.minimize(objective, 
                                      x0 = initial_guess,
                                      method='SLSQP',
-                                     bounds=bounds)
+                                     bounds=bounds,
+                                     tol = 1e-20)  
         
         # d. unpack solution
         est_sol.alpha = solution.x[0]
         est_sol.sigma = solution.x[1]
 
         if do_plot:
-
             fig = plt.figure() # create the figure
             ax = fig.add_subplot(1,1,1,projection='3d') # create a 3d type axis 
             ax.plot_surface(x1_values,x2_values,u_values); # create surface plot in the axis
             # note: fig.add_subplot(a,b,c) creates the c'th subplot in a grid of a times b plots
-
 
         return est_sol
 
