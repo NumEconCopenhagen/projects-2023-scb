@@ -166,7 +166,7 @@ class HouseholdSpecializationModelClass:
         # c. call solver, use SLSQP
         sol_case2 = optimize.minimize(
             value_of_choice, initial_guess,
-            method='SLSQP', bounds=bounds, constraints=constraints)
+            method='SLSQP', bounds=bounds, constraints=constraints, tol=1e-10)
         
         # d. unpack solution
         opt_con.LM = sol_case2.x[0]
@@ -232,13 +232,13 @@ class HouseholdSpecializationModelClass:
         A = np.vstack([np.ones(x.size),x]).T
         sol.beta0,sol.beta1 = np.linalg.lstsq(A,y,rcond=None)[0]
 
-    def loss_function(self):
+    def error_function(self):
         """ calculate loss function """
 
         sol = self.sol
         par = self.par
-        loss = (par.beta0_target-sol.beta0)**2 + (par.beta1_target-sol.beta1)**2 
-        return loss
+        error = (par.beta0_target-sol.beta0)**2 + (par.beta1_target-sol.beta1)**2 
+        return error
 
 
     def estimate(self,alpha=None,sigma=None):
@@ -256,16 +256,37 @@ class HouseholdSpecializationModelClass:
              self.solve_wF_vec()
              self.run_regression()
              # c. compare with data
-             error = self.loss_function()
+             error = self.error_function()
              return error
         
         parnames = ['alpha','sigma']
         
         x0 = [par.__dict__[parname] for parname in parnames]
         
-        bounds = ((0,1),(0,None))
+        bounds = ((0,1),(0,100))
 
-        res = optimize.minimize(obj,x0,bounds=bounds,method='nelder-mead',args=(parnames))
+        res = optimize.minimize(obj,x0,bounds=bounds,method='nelder-mead',args=(parnames), tol=1e-10)
         assert res.success
         error_ = obj(res.x, parnames, do_print=True)
         return error_
+    
+
+    def estimate_sigma(self):
+        """estima sigma"""
+        par = self.par
+        # objective function = loss function
+        def objective_s(sigma):
+                par.sigma = sigma 
+                self.solve_wF_vec()
+                self.run_regression()
+                error = self.error_function()
+                return error
+        
+        bounds = ((0,1000))
+        res = optimize.minimize_scalar(objective_s, bounds=bounds)
+        sigma_opt = res.x
+        assert res.success
+
+        error = objective_s(res.x)
+
+        return sigma_opt, error
