@@ -233,7 +233,7 @@ class HouseholdSpecializationModelClass:
         sol.beta0,sol.beta1 = np.linalg.lstsq(A,y,rcond=None)[0]
 
     def error_function(self):
-        """ calculate loss function """
+        """ calculate error function """
 
         sol = self.sol
         par = self.par
