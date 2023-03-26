@@ -1,3 +1,5 @@
+#### Konrad model
+
 
 from types import SimpleNamespace
 
@@ -231,36 +233,65 @@ class HouseholdSpecializationModelClass:
         A = np.vstack([np.ones(x.size),x]).T
         sol.beta0,sol.beta1 = np.linalg.lstsq(A,y,rcond=None)[0]
 
-        # define error function
-    def error_function(self):
-           """ calculate error function """
+    
+    def min_function(self):
 
-           sol = self.sol
-           par = self.par
-           error = (par.beta0_target-sol.beta0)**2 + (par.beta1_target-sol.beta1)**2 
-           return error
-
-
-    def estimate(self,alpha=None,sigma=None):
-        """estimate alpha and sigma"""
+        sol = self.sol
         par = self.par
-        # objective function = loss function
-        def obj(x, parnames, do_print=False): 
-               # a. update parameters
-             for xval,parname in zip(x,parnames):
-                 par.__dict__[parname] = xval
-                 if do_print: print(f'{parname:10s} = {xval:.4f}')
-             if do_print: print('')
-             # b. simulate and calculate moments
-             self.solve_wF_vec()
-             self.run_regression()
-             # c. compare with data
-             error = self.error_function()
-             return error
-        parnames = ['alpha','sigma']
-        x0 = [par.__dict__[parname] for parname in parnames]
-        bounds = ((0,1),(0,100))
-        res = optimize.minimize(obj,x0,bounds=bounds,method='nelder-mead',args=(parnames), tol=1e-10)
-        assert res.success
-        error_ = obj(res.x, parnames, do_print=True)
-        return error_
+
+        return (sol.beta0-par.beta0_target)**2+(sol.beta1-par.beta1_target)**2
+    
+    def estimate(self,alpha=None,sigma=None, do_plot = False):
+        """ estimate alpha and sigma """
+        # its not right, since it really depends on initial guess
+
+        est_sol = SimpleNamespace() 
+
+        par = self.par
+        sol = self.sol
+
+        # a. objective function
+        def objective(x):
+            alpha = x[0]
+            sigma = x[1]
+
+            par.alpha = alpha 
+            par.sigma = sigma 
+
+            self.solve_wF_vec()
+            self.run_regression()
+            min = self.min_function()
+
+            # print(f'alpha, sigma    = ({par.alpha, par.sigma})')
+            # print(f'min_function    = {min}')
+            # print(f'beta0, beta1    = {sol.beta0, sol.beta1}')
+
+            return min
+        
+        bounds = ((1e-8,1),(1e-8,100)) # should be inf
+
+        # result depends on initial guess
+        initial_guess = [0.99,0.1]
+
+        # c. call solver, use SLSQP
+        solution = optimize.minimize(objective, 
+                                     x0 = initial_guess,
+                                     method='SLSQP',
+                                     bounds=bounds,
+                                     tol = 1e-20)  
+        
+        # d. unpack solution
+        est_sol.alpha = solution.x[0]
+        est_sol.sigma = solution.x[1]
+
+        if do_plot:
+            fig = plt.figure() # create the figure
+            ax = fig.add_subplot(1,1,1,projection='3d') # create a 3d type axis 
+            ax.plot_surface(x1_values,x2_values,u_values); # create surface plot in the axis
+            # note: fig.add_subplot(a,b,c) creates the c'th subplot in a grid of a times b plots
+
+        return est_sol
+
+
+        
+
