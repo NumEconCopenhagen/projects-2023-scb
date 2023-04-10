@@ -3,9 +3,9 @@
 import scrapy
 from scrapy.crawler import CrawlerProcess
 import pandas as pd 
-
-data_path = "/Users/konradthide/Desktop/PYTHON/Spider/s_scrape/on_demand/"
-
+import os
+os.getcwd()
+input_dir = os.path.join(os.getcwd(),'data')
 
 class LoginSpider(scrapy.Spider):
     name = '<3'
@@ -14,7 +14,6 @@ class LoginSpider(scrapy.Spider):
         first_year = 2000
         end_year = 2022
 
-
         url_list = [f'https://ugenr.dk/{i}/påske' for i in range(first_year,end_year+1)]
         # url_list = ["https://ugenr.dk/2020/påske"]
         for url_short in url_list:
@@ -22,7 +21,6 @@ class LoginSpider(scrapy.Spider):
                                  callback = self.parse_text)
     
     def parse_text(self, response):
-
         # Create a SelectorList of the course titles text
         year_txt = response.xpath('//span[contains(@id,"query")]/strong/text()')
         uge_txt = response.xpath('//span[contains(@id,"ugenr")]/span/text()')
@@ -77,8 +75,7 @@ process.start()
 
 # convert to dataframe and export 
 df = pd.DataFrame(data=zip(year, month, start_date, end_date, uge, dato, skærtorsdag, langfredag, påskedag, påskedag_2), columns=['year','month','start_date', 'end_date' ,'uge', 'dato', 'skærtorsdag', 'langfredag', 'påskedag', 'påskedag_2'])
-df.to_pickle('./påskedage.pkl')
+df.to_pickle(os.path.join(input_dir,'paaskedage.pkl'))
 
 # show df
-
 print(df)
