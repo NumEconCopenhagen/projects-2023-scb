@@ -2,9 +2,9 @@ import pandas as pd
 import os
 
 def read_yahoo(input_dir, filename='file.csv'):
-    """ Read csv file from Yahoo finance to df
+    """ Read csv file from Yahoo finance to df\n
     Args: 
-        filename (csv), input_dir = directory of data
+        filename (filetype = csv), input_dir = directory of data
     Returns:
         Beautiful financial dataframe
     """
