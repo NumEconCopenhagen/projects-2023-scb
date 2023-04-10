@@ -8,11 +8,10 @@ os.getcwd()
 input_dir = os.path.join(os.getcwd(),'data')
 nifty50 = pd.read_csv(os.path.join(input_dir,'NSEI2.csv'), sep=',')
 nifty50.head()
-
 rename_dict = {} #initiate dict
+
 for i in nifty50.columns: #loop over names in columns
-    # creates dict for renaming variables with no upper case letters
-    # nor any spaces
+    # creates dict for renaming variables with no upper case letters nor any spaces
     rename_dict[i] = i.lower().replace(' ', '_') 
 nifty50 = nifty50.rename(columns=rename_dict)
 
@@ -27,8 +26,6 @@ nifty50.plot('date', 'daily_return')
 
 # %%
 nifty50.head()
-
-# %%
 nifty50['dif'] = nifty50.daily_return - nifty50.log_daily_return
 
 # %%
@@ -66,8 +63,12 @@ nifty50_easter.loc[nifty50_easter.easter_week==1].plot('date', 'daily_return', k
 nifty50_easter.loc[nifty50_easter.easter_week!=1].plot('date', 'daily_return', kind='kde')
 
 #%%
+import dataproject
+import pandas as pd
+input_dir = os.path.join(os.getcwd(),'data')
+nifty50 = dataproject.read_yahoo(input_dir, filename='NSEI2.csv')
 
-
+dataproject.read_yahoo()
 
 # %% import using yfinance modulr
 import pandas as pd
