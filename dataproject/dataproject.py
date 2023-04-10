@@ -1,16 +1,23 @@
-def keep_regs(df, regs):
-    """ Example function. Keep only the subset regs of regions in data.
+import pandas as pd
+import os
 
-    Args:
-        df (pd.DataFrame): pandas dataframe 
-
+def read_yahoo(input_dir, filename='file.csv'):
+    """ Read csv file from Yahoo finance to df
+    Args: 
+        filename (csv), input_dir = directory of data
     Returns:
-        df (pd.DataFrame): pandas dataframe
-
-    """ 
-    
-    for r in regs:
-        I = df.reg.str.contains(r)
-        df = df.loc[I == False] # keep everything else
+        Beautiful financial dataframe
+    """
+    df = pd.read_csv(os.path.join(input_dir, filename))
+    rename_dict = {}
+    for i in df.columns: # loop over column names:
+        # remove lower case and spaces from column names
+        rename_dict[i] = i.lower()
+        rename_dict[i] = rename_dict[i].replace(' ','_')
+    df = df.rename(columns=rename_dict)
+    # Create variables for causal analysis
+    df['daily_return'] = (df['adj_close']-df['adj_close'].shift(1))/df['adj_close'].shift(1)
+    df['mean_return'] = df['daily_return'].mean()
+    df['deameaned_return'] = df['daily_return'] - df['mean_return']
     
     return df
