@@ -24,19 +24,19 @@ class LoginSpider(scrapy.Spider):
         year_txt = response.xpath('//span[contains(@id,"query")]/strong/text()')
         uge_txt = response.xpath('//span[contains(@id,"ugenr")]/span/text()')
         dato_txt = response.xpath('//p[contains(@id,"description")]/text()')
-        skærtorsdag_txt = response.xpath('//div[contains(@id,"holidays")]/dl/dt[1]/text()')
-        langfredag_txt = response.xpath('//div[contains(@id,"holidays")]/dl/dt[2]/text()')
-        påskedag_txt = response.xpath('//div[contains(@id,"holidays")]/dl/dt[3]/text()')
-        påskedag_2_txt = response.xpath('//div[contains(@id,"holidays")]/dl/dt[4]/text()')
+        # skærtorsdag_txt = response.xpath('//div[contains(@id,"holidays")]/dl/dt[1]/text()')
+        # langfredag_txt = response.xpath('//div[contains(@id,"holidays")]/dl/dt[2]/text()')
+        # påskedag_txt = response.xpath('//div[contains(@id,"holidays")]/dl/dt[3]/text()')
+        # påskedag_2_txt = response.xpath('//div[contains(@id,"holidays")]/dl/dt[4]/text()')
 
         # Extract the text and strip it clean
         year_ext = year_txt.get().strip()[-4:]
         uge_ext = uge_txt.get().strip()
         dato_ext = dato_txt.get().strip()
-        skærtorsdag_ext = skærtorsdag_txt.get().strip()
-        langfredag_ext = langfredag_txt.get().strip()
-        påskedag_ext = påskedag_txt.get().strip()
-        påskedag_2_ext = påskedag_2_txt.get().strip()
+        # skærtorsdag_ext = skærtorsdag_txt.get().strip()
+        # langfredag_ext = langfredag_txt.get().strip()
+        # påskedag_ext = påskedag_txt.get().strip()
+        # påskedag_2_ext = påskedag_2_txt.get().strip()
 
         month_ext = dato_txt.get().strip()[-10:-5]
         end_date_ext = dato_txt.get().strip()[-14:-12]
@@ -47,10 +47,10 @@ class LoginSpider(scrapy.Spider):
         year.append(year_ext)
         uge.append(uge_ext)
         dato.append(dato_ext)
-        skærtorsdag.append(skærtorsdag_ext)
-        langfredag.append(langfredag_ext)
-        påskedag.append(påskedag_ext)
-        påskedag_2.append(påskedag_2_ext)
+        # skærtorsdag.append(skærtorsdag_ext)
+        # langfredag.append(langfredag_ext)
+        # påskedag.append(påskedag_ext)
+        # påskedag_2.append(påskedag_2_ext)
 
         month.append(month_ext)
         end_date.append(end_date_ext)
@@ -63,22 +63,23 @@ end_date = []
 start_date = []
 uge = []
 dato = []
-skærtorsdag = []
-langfredag = []
-påskedag = []
-påskedag_2 = [] 
+# skærtorsdag = []
+# langfredag = []
+# påskedag = []
+# påskedag_2 = [] 
 
-class scrape_ugenr:
-    def __init__(self):
-        # start spider
-        process = CrawlerProcess()
-        process.crawl(LoginSpider)
-        process.start()
 
-    def generate_dataset(do_print = False):
-        input_dir = os.path.join(os.getcwd(),'data')
-        df = pd.DataFrame(data=zip(year, month, start_date, end_date, uge, dato, skærtorsdag, langfredag, påskedag, påskedag_2), columns=['year','month','start_date', 'end_date' ,'uge', 'dato', 'skærtorsdag', 'langfredag', 'påskedag', 'påskedag_2'])
-        df.to_pickle(os.path.join(input_dir,'paaskedage.pkl'))
+ # start spider
+process = CrawlerProcess()
+process.crawl(LoginSpider)
+process.start()
 
-        if do_print == True:
-            print(df)
+# make dataset  
+input_dir = os.path.join(os.getcwd(),'data')
+foo = '/Users/konradthide/Desktop/Økonomi/6. semester/IntroProg/assignments/projects-2023-scb/dataproject/data'
+df = pd.DataFrame(data=zip(year, month, start_date, end_date, uge, dato), columns=['year','month','start_date', 'end_date' ,'uge', 'dato'])
+print(df)
+df.to_pickle(f'{foo}/paaskedage.pkl')
+print(f'exported to: {foo}/paaskedage.pkl')
+
+
