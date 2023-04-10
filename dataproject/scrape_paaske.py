@@ -1,11 +1,11 @@
-# scrape ugenr.dk for at få helligdage for påske for forskellige år
+# scrape ugenr.dk
+
 import scrapy
 from scrapy.crawler import CrawlerProcess
 import pandas as pd 
 import os
 
-input_dir = os.path.join(os.getcwd(),'data')
-
+# a. create spider 
 class LoginSpider(scrapy.Spider):
     name = '<3'
 
@@ -56,6 +56,7 @@ class LoginSpider(scrapy.Spider):
         end_date.append(end_date_ext)
         start_date.append(start_date_ext)
 
+# b. create empty list for datastorage 
 year = []
 month = []
 end_date = []
@@ -67,14 +68,17 @@ langfredag = []
 påskedag = []
 påskedag_2 = [] 
 
-# start spider
-process = CrawlerProcess()
-process.crawl(LoginSpider)
-process.start()
+class scrape_ugenr:
+    def __init__(self):
+        # start spider
+        process = CrawlerProcess()
+        process.crawl(LoginSpider)
+        process.start()
 
-# convert to dataframe and export 
-df = pd.DataFrame(data=zip(year, month, start_date, end_date, uge, dato, skærtorsdag, langfredag, påskedag, påskedag_2), columns=['year','month','start_date', 'end_date' ,'uge', 'dato', 'skærtorsdag', 'langfredag', 'påskedag', 'påskedag_2'])
-df.to_pickle(os.path.join(input_dir,'paaskedage.pkl'))
+    def generate_dataset(do_print = False):
+        input_dir = os.path.join(os.getcwd(),'data')
+        df = pd.DataFrame(data=zip(year, month, start_date, end_date, uge, dato, skærtorsdag, langfredag, påskedag, påskedag_2), columns=['year','month','start_date', 'end_date' ,'uge', 'dato', 'skærtorsdag', 'langfredag', 'påskedag', 'påskedag_2'])
+        df.to_pickle(os.path.join(input_dir,'paaskedage.pkl'))
 
-# show df
-print(df)
+        if do_print == True:
+            print(df)
