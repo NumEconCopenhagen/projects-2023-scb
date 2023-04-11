@@ -28,10 +28,33 @@ merge_inner = pd.merge(omx, nifty, on='date',how='inner')
 
 
 #%%
-merge_inner =
+rename_dict = {}
+for i in merge_inner.columns:
+        rename_dict[i] = i.lower()
+        rename_dict[i] = rename_dict[i].replace('_x','_omxs')
+        rename_dict[i] = rename_dict[i].replace('_y','_nifty')
+
+merge_inner = merge_inner.rename(columns=rename_dict)
 
 #%%
-merge_final = pd.merge(merge_inner,dates,on='date',how='left')
+for i in ['omxs','nifty']:
+      merge_inner[f'demeaned_return_{i}'] = merge_inner[f'daily_return_{i}'] - merge_inner[f'daily_return_{i}'].mean()
+    #   merge_inner[f'mean_return_{i}'] = merge_inner[f'daily_return_{i}'].mean()
+
+
+#%%
+merge_final = pd.merge(merge_inner, dates,on='date',how='left')
+
+#%%
+merge_final.loc[merge_final['easter_week'].isna()==True, 'easter_week'] = 0 
+
+mean_omxs = merge_final['daily_return_omxs'].mean()
+mean_nifty = merge_final['daily_return_nifty'].mean()
+# mean_omxs_easter = merge_final.loc[merge_final['easter_week' == 1]].mean()
+# mean_nifty_easter = merge_final.loc['easter_week'==1,'daily_return_nifty'].mean()
+
+
+
 #%%
 merge_final.plot('date',['daily_return_x', 'daily_return_y'], label = ['OMXS30', 'NIFTY50'],alpha=0.6)
 # %%

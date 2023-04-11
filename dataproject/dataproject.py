@@ -14,5 +14,6 @@ def read_yahoo(input_dir, filename='file.csv'):
         rename_dict[i] = i.lower()
         rename_dict[i] = rename_dict[i].replace(' ','_')
     df = df.rename(columns=rename_dict)
+    df['daily_return'] = ((df['adj_close'])/(df['adj_close'].shift(1)))-1
     return df
 
