@@ -3,6 +3,7 @@
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 import os
 
@@ -14,7 +15,7 @@ input_dir = os.path.join(os.getcwd(),'data')
 
 #%%
 
-omx =dataproject.read_yahoo(input_dir, 'omxs30.csv')
+omx = dataproject.read_yahoo(input_dir, 'omxs30.csv')
 nifty = dataproject.read_yahoo(input_dir, 'nsei2.csv')
 dates = pd.read_pickle(os.path.join(input_dir, 'dates.pkl'))
 
@@ -56,4 +57,9 @@ print('The difference in mean returns for OMXS30 is ' +str(dif_x))
 print('The difference in mean returns for NIFTY50 is ' +str(dif_y))
 
 
+# %%
+
+fig, ax = plt.subplot(1,1,1)
+
+merge_final.plot('date',['daily_return_x', 'daily_return_y'], label = ['OMXS30', 'NIFTY50'],alpha=0.6, ax=ax)
 # %%
