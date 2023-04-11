@@ -18,7 +18,7 @@ def read_yahoo(input_dir, filename='file.csv'):
     # Create variables for causal analysi
     # s
     df['daily_return'] = (df['adj_close']-df['adj_close'].shift(1))/df['adj_close'].shift(1)
-    df['mean_return'] = df['daily_return'].mean()
-    df['deameaned_return'] = df['daily_return'] - df['mean_return']
+    # df['mean_return'] = df['daily_return'].mean()
+    # df['deameaned_return'] = df['daily_return'] - df['mean_return']
 
     return df
