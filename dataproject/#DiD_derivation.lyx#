@@ -242,9 +242,21 @@ If we subtract the observed changes from period
 
 \begin_layout Standard
 Under the assumption that 
+\begin_inset Formula $E[\text{Daily\_return}_{it}\vert\text{Easter=0},\text{Christ}=1]-E[\text{Daily\_return}_{it-1}\vert\text{Easter=1},\text{Christ}=1]=E[\text{Daily\_return}_{it}\vert\text{Easter=0},\text{Christ}=0]-E[\text{Daily\_return}_{it-1}\vert\text{Easter=0},\text{Christ}=0]$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\begin_layout Standard
 \begin_inset Formula 
 \[
-E[\text{Daily\_return}_{it}\vert\text{Easter=0},\text{Christ}=1]-E[\text{Daily\_return}_{it-1}\vert\text{Easter=1},\text{Christ}=1]=E[\text{Daily\_return}_{it}\vert\text{Easter=0},\text{Christ}=0]-E[\text{Daily\_return}_{it-1}\vert\text{Easter=0},\text{Christ}=0]
+\beta_{3}=E(\text{Daily\_return}_{it}\vert\text{Easter=1},\text{Christ}=1)-E(\text{Daily\_return}_{it-1}\vert\text{Easter=0},\text{Christ}=1)
 \]
 
 \end_inset
@@ -253,13 +265,14 @@ E[\text{Daily\_return}_{it}\vert\text{Easter=0},\text{Christ}=1]-E[\text{Daily\_
 \end_layout
 
 \begin_layout Standard
-which is commonly known as the parralel trend assumption, we have identfied
- 
-\begin_inset Formula $\beta_{3}$
+\begin_inset Formula 
+\[
++(E(\text{Daily\_return}_{it}\vert\text{Easter=0},\text{Christ}=1)-E(\text{Daily\_return}_{it-1}\vert\text{Easter=0},\text{Christ}=1))
+\]
+
 \end_inset
 
- and can interpret the results from the regression as the causal effect
- of Easter on stock returns.
+
 \end_layout
 
 \begin_layout Subsection*
