@@ -2,8 +2,7 @@ import os
 import pandas as pd
 
 
-def cleaner_func(dataframe):
+def calculations(dataframe):
     for i in ['x','y']:
-        dataframe['mean_return_{i}']=dataframe['daily_return_{i}'].mean()
-        dataframe['demeaned_return_{i}']=dataframe['daily_return_{i}']- dataframe['daily_return_{i}'].mean()
+        dataframe['daily_return_{i}'] = ((dataframe['adj_close_{i}'])/(dataframe['adj_close{i}'].shift(1)))-1
     return dataframe
