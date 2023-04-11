@@ -88,4 +88,45 @@ nifty50 = pdr.get_data_yahoo('NFTY', start, end)
 # %%
 nifty50
 
+# %% Interactive plot varying years and varying and dataframe varying
+import ipywidgets as widgets
+
+
+#%%
+def plot_e(df, municipality): 
+    I = df['municipality'] == municipality
+    ax=df.loc[I,:].plot(x='year', y='empl', style='-o', legend=False)
+
+widgets.interact(plot_e, 
+    df = widgets.fixed(empl_long),
+    municipality = widgets.Dropdown(description='Municipality', 
+                                    options=empl_long.municipality.unique(), 
+                                    value='Roskilde')
+); 
+
+#%%
+from matplotlib import pyplot as plt
+
+
+#%%
+def say_my_name(name):
+    """
+    Print the current widget value in short sentence
+    """
+    print(f'My name is {name}')
+     
+widgets.interact(say_my_name, name=["Jim", "Emma", "Bond"]);
+
+
+#%%
+def plot_stock(df, stock='omx'):
+    fig, ax = plt.subplots(nrow=1, ncols=1, figsize=(10,8))
+    y = df[f'daily_return_{stock}']
+    x = df['date']
+    ax.plot(x, y)
+
+widgets.interact
+#%%
+
+    
 # %%
