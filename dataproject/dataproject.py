@@ -9,16 +9,5 @@ def read_yahoo(input_dir, filename='file.csv'):
         Beautiful financial dataframe
     """
     df = pd.read_csv(os.path.join(input_dir, filename))
-    rename_dict = {}
-    for i in df.columns: # loop over column names:
-        # remove lower case and spaces from column names
-        rename_dict[i] = i.lower()
-        rename_dict[i] = rename_dict[i].replace(' ','_')
-    df = df.rename(columns=rename_dict)
-    # Create variables for causal analysi
-    # s
-    df['daily_return'] = (df['adj_close']-df['adj_close'].shift(1))/df['adj_close'].shift(1)
-    df['mean_return'] = df['daily_return'].mean()
-    df['deameaned_return'] = df['daily_return'] - df['mean_return']
-
+    df.columns=df.columns.lower().replace(' ','_')  # remove lower case and spaces from column names
     return df
