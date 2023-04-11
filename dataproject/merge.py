@@ -43,6 +43,8 @@ for i in ['omxs','nifty']:
 
 
 #%%
+merge_inner['date'] = pd.to_datetime(merge_inner['date'])
+dates['date'] = pd.to_datetime(dates['date'])
 merge_final = pd.merge(merge_inner, dates,on='date',how='left')
 
 #%%
@@ -53,8 +55,9 @@ mean_nifty = merge_final['daily_return_nifty'].mean()
 # mean_omxs_easter = merge_final.loc[merge_final['easter_week' == 1]].mean()
 # mean_nifty_easter = merge_final.loc['easter_week'==1,'daily_return_nifty'].mean()
 
-
-
+#%%
+pd.options.display.max_rows=100
+merge_final.head(100)
 #%%
 merge_final.plot('date',['daily_return_x', 'daily_return_y'], label = ['OMXS30', 'NIFTY50'],alpha=0.6)
 # %%
