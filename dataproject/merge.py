@@ -28,9 +28,8 @@ merge_inner = pd.merge(omx, nifty, on='date',how='inner')
 
 
 #%%
-merge_inner = cleaner_func(merge_inner)
+merge_inner =
 
-merge_inner
 #%%
 merge_final = pd.merge(merge_inner,dates,on='date',how='left')
 #%%
