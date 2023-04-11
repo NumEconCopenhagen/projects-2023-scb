@@ -22,3 +22,12 @@ def read_yahoo(input_dir, filename='file.csv'):
     # df['deameaned_return'] = df['daily_return'] - df['mean_return']
 
     return df
+
+# def merge_clean(dataset):
+#     """Calculate mean returns and demeaned returns for merged dataset"""
+    
+#     df = dataset
+#     rename_dict = {}
+
+
+#     df['mean_return_x'] =
