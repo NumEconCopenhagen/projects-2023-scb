@@ -9,6 +9,10 @@ def read_yahoo(input_dir, filename='file.csv'):
         Beautiful financial dataframe
     """
     df = pd.read_csv(os.path.join(input_dir, filename))
-    df.columns=df.columns.lower().replace(' ','_')  # remove lower case and spaces from column names
+    rename_dict = {}
+    for i in df.columns:
+        rename_dict[i] = i.lower()
+        rename_dict[i] = rename_dict[i].replace(' ','_')
+    df = df.rename(columns=rename_dict)
     return df
 
