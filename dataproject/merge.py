@@ -14,6 +14,7 @@ input_dir = os.path.join(os.getcwd(),'data')
 
 #%%
 
+
 omx = dataproject.read_yahoo(input_dir, 'omxs30.csv')
 nifty = dataproject.read_yahoo(input_dir, 'nsei2.csv')
 dates = pd.read_pickle(os.path.join(input_dir, 'dates.pkl'))
