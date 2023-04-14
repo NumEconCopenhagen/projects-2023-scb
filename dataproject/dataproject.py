@@ -44,7 +44,7 @@ def plot_stock_interactive(merge_final):
             ax.set_title(f'Daily returns for {stock_index}')
             ax.vlines(vertical_lines, y_min, y_max, color='#39ff14',
                        alpha=0.3,
-                       linewidth=4, label="Easter period")
+                       linewidth=6, label="Days during easter")
             ax.legend(loc="lower center")
         elif stock_index == 'both' and start_date <= end_date:
             fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10,8))
@@ -60,7 +60,7 @@ def plot_stock_interactive(merge_final):
             ax.grid(True, alpha=0.3)
             ax.vlines(vertical_lines, y_min, y_max,
                        color='#39ff14',
-                       alpha=0.3, linewidth=4, label="Easter period")
+                       alpha=0.3, linewidth=6, label="Days during easter")
             ax.set_title(f"Daily returns for 'OMXS', 'NIFTY FIFTY'")
             ax.legend(loc="lower center")
         else: 
