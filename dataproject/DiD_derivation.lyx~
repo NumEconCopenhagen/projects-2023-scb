@@ -130,15 +130,15 @@ Under some assumptions we can estimate
 
  as causal the difference in difference of the daily stock return in a predomina
 ntly christian country against a predominantly non-christian country.
- If we want 
+ Under some assumptions we can we can derive 
 \begin_inset Formula $\beta_{3}$
 \end_inset
 
- to have a causal interpretation we can derive 
+ to have a causal interpretation, where 
 \begin_inset Formula $\beta_{3}$
 \end_inset
 
- as: 
+ is given by: 
 \end_layout
 
 \begin_layout Standard
