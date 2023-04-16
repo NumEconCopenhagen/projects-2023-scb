@@ -68,17 +68,20 @@ dato = []
 # påskedag = []
 # påskedag_2 = [] 
 
-
- # start spider
+# c. start spider
 process = CrawlerProcess()
 process.crawl(LoginSpider)
 process.start()
 
-# make dataset  
-input_dir = os.path.join(os.getcwd(),'data')
+# d. make dataset of datastorage.
+
+# directory to store
 foo = '/Users/konradthide/Desktop/Økonomi/6. semester/IntroProg/assignments/projects-2023-scb/dataproject/data'
+
 df = pd.DataFrame(data=zip(year, month, start_date, end_date, uge, dato), columns=['year','month','start_date', 'end_date' ,'uge', 'dato'])
+
 print(df)
+
 df.to_pickle(f'{foo}/paaskedage.pkl')
 print(f'exported to: {foo}/paaskedage.pkl')
 
