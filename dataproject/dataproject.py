@@ -35,7 +35,7 @@ def plot_stock_interactive(merge_final):
             vertical_lines = merge_final.loc[merge_final.easter_week==1, 'date'].to_numpy()
             y_max = 0.075 # Choose value y axis maximum
             y_min = -0.11 # Choose value y axis minimum
-            if start_date <= end_date and stock_index=='omxs': #or stock_index=='nifty': # assert that dates chose make sense
+            if start_date <= end_date and stock_index=='omxs' or stock_index=='nifty': # assert that dates chose make sense
                 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(5,5)) # initiate plot
                 ax.clear()
                 I = (merge_final.date>=start_date)&(merge_final.date<=end_date) # dataframe slice condition
@@ -75,24 +75,8 @@ def plot_stock_interactive(merge_final):
             else: 
                  print("Hello mate, please choose a valid range of dates")
         
-    out = widgets.interact(plot_stock_index, stock_index=['omxs', "nifty"], #start_date=merge_final.date, end_date=merge_final.date)#,
+    out = widgets.interact(plot_stock_index, stock_index=['both', 'omxs', "nifty"], #start_date=merge_final.date, end_date=merge_final.date)#,
                               start_date = SelectionSlider(value= pd.to_datetime("2016-05-03 00:00:00"), options=merge_final.date, step=1),
                                 end_date = SelectionSlider(value=pd.to_datetime("2016-06-09 00:00:00"), options=merge_final.date, step=1));
     
     return  display(out)
-
-
-#from ipywidgets import Output, IntSlider, VBox
-#from IPython.display import clear_output
-#out = Output()
-#
-#slider = IntSlider()
-#
-#def square(change):
-#    with out:
-#        clear_output()
-#        print(change.new*change.new)
-#
-#slider.observe(square, 'value')
-#slider.value = 50
-#display(VBox([slider, out]))
