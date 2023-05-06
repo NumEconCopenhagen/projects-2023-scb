@@ -36,8 +36,6 @@ class Solow():
 
         par.simT = 200
 
-
-
     
     def find_steady_state(self, sK=0.07, sH=0.12, tol=1e-6):
 
@@ -55,79 +53,30 @@ class Solow():
         for i,j in zip([A,K,H,L,Y], [par.A_init, par.K_init,par.H_init,par.L_init,par.Y_init]):
             i[0] = j
         
-        t = 1
+        t = 0
         while t < par.simT:
-       
-            A[t] = A[t-1]*(1+par.g)     
-            L[t] = L[t-1]*(1+par.n) 
-
-            H[t] = Y[t-1]*sH + (1-par.delta)*H[t-1]
-            K[t] = Y[t-1]*sK + (1-par.delta)*H[t-1]
 
             if par.production_function == 'cobb-douglas':
                 Y[t] = (K[t]**par.alpha)*(H[t]**par.phi)*(A[t]*L[t])**(1-par.alpha-par.phi)
             else:
                 Y[t] = np.nan
+
+            A[t+1] = A[t]*(1+par.g)     
+            L[t+1] = L[t]*(1+par.n) 
+
+            H[t+1] = Y[t]*sH + (1-par.delta)*H[t]
+            K[t+1] = Y[t]*sK + (1-par.delta)*H[t]
             
             y_tilde[t] = Y[t]/(A[t]*L[t])
             k_tilde[t] = K[t]/(A[t]*L[t])
             h_tilde[t] = H[t]/(A[t]*L[t])
 
-            if (k_tilde[t]-k_tilde[t-1] < tol) and (h_tilde[t]-h_tilde[t-1] < tol):
+            if (t>1) and (k_tilde[t]-k_tilde[t-1] < tol) and (h_tilde[t]-h_tilde[t-1] < tol):
                 print("we are breaking")
                 break
 
             t += 1
         print(t)
+        # print(y_tilde)
+        return y_tilde[:t], k_tilde[:t], h_tilde[:t]
             
-
-
-
-
-    def find_opt_s(self):
-        
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# def solve_ss(alpha, c):
-#     """ Example function. Solve for steady state k. 
-
-#     Args:
-#         c (float): costs
-#         alpha (float): parameter
-
-#     Returns:
-#         result (RootResults): the solution represented as a RootResults object.
-
-#     """ 
-    
-#     # a. Objective function, depends on k (endogenous) and c (exogenous).
-#     f = lambda k: k**alpha - c
-#     obj = lambda kss: kss - f(kss)
-
-#     #. b. call root finder to find kss.
-#     result = optimize.root_scalar(obj,bracket=[0.1,100],method='bisect')
-    
-#     return result
