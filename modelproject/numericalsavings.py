@@ -38,8 +38,6 @@ class Solow():
 
         par.simT = 200
 
-
-
     
     def find_steady_state(self, sK=0.07, sH=0.12, tol=1e-6):
 
@@ -57,110 +55,111 @@ class Solow():
         for i,j in zip([A,K,H,L,Y], [par.A_init, par.K_init,par.H_init,par.L_init,par.Y_init]):
             i[0] = j
         
-        t = 1
+        t = 0
         while t < par.simT:
-       
-            A[t] = A[t-1]*(1+par.g)     
-            L[t] = L[t-1]*(1+par.n) 
-
-            H[t] = Y[t-1]*sH + (1-par.delta)*H[t-1]
-            K[t] = Y[t-1]*sK + (1-par.delta)*H[t-1]
 
             if par.production_function == 'cobb-douglas':
                 Y[t] = (K[t]**par.alpha)*(H[t]**par.phi)*(A[t]*L[t])**(1-par.alpha-par.phi)
             else:
                 Y[t] = np.nan
+
+            A[t+1] = A[t]*(1+par.g)     
+            L[t+1] = L[t]*(1+par.n) 
+
+            H[t+1] = Y[t]*sH + (1-par.delta)*H[t]
+            K[t+1] = Y[t]*sK + (1-par.delta)*H[t]
             
             y_tilde[t] = Y[t]/(A[t]*L[t])
             k_tilde[t] = K[t]/(A[t]*L[t])
             h_tilde[t] = H[t]/(A[t]*L[t])
 
-            if (k_tilde[t]-k_tilde[t-1] < tol) and (h_tilde[t]-h_tilde[t-1] < tol):
+            if (t>1) and (k_tilde[t]-k_tilde[t-1] < tol) and (h_tilde[t]-h_tilde[t-1] < tol):
                 print("we are breaking")
                 break
 
             t += 1
         print(t)
-        return Y[t]
-
-
-    def cons_t(self, sK=0.07, sH=0.012):
-             consumption = (1-sK-sH)*self.find_steady_state(sK=sK, sH=sH, tol=1e-6)
-             return consumption
-
-    def find_opt_s(self):
-
-        opt = SimpleNamespace()
-
-        s_K = np.linspace(1e-8, 1, 10)
-        s_H = np.linspace(1e-8, 1, 10)
-
-        x = np.linspace(0,1,10)
-        s_K, s_H = np.meshgrid(x,x) # all combinations
+        # print(y_tilde)
+        return y_tilde[:t], k_tilde[:t], h_tilde[:t]
     
-        s_K = s_K.ravel() # vector
-        s_H = s_H.ravel()
-
+#%%
+#    def cons_t(self, sK=0.07, sH=0.012):
+#             consumption = (1-sK-sH)*self.find_steady_state(sK=sK, sH=sH, tol=1e-6)
+#             return consumption
+#
+#    def find_opt_s(self):
+#
+#        opt = SimpleNamespace()
+#
+#        s_K = np.linspace(1e-8, 1, 10)
+#        s_H = np.linspace(1e-8, 1, 10)
+#
+#        x = np.linspace(0,1,10)
+#        s_K, s_H = np.meshgrid(x,x) # all combinations
+#    
+#        s_K = s_K.ravel() # vector
+#        s_H = s_H.ravel()
+#
+#    
+#        cons = self.cons_t(sk=s_K, sH=s_H)
+#        # c. set to minus infinity if constraint is broken
+#        I = (s_K+s_H > 1) # | is "or"
+#        cons[I] = -np.inf
+#    
+#        # d. find maximizing argument
+#        j = np.argmax(x)
+#        
+#        opt.s_H = s_H[j]
+#        opt.s_K = s_K[j]
+#       
+#        # b. calculate utility
+#
+#        return opt
     
-        cons = self.cons_t(sk=s_K, sH=s_H)
-        # c. set to minus infinity if constraint is broken
-        I = (s_K+s_H > 1) # | is "or"
-        cons[I] = -np.inf
-    
-        # d. find maximizing argument
-        j = np.argmax(x)
-        
-        opt.s_H = s_H[j]
-        opt.s_K = s_K[j]
-       
-        # b. calculate utility
-
-        return opt
-    
 
 
 
-
-
-    def prod_yss(self, x):
-        par = self.par
-
-        denominator = (par.n+par.g+par.delta+(par.n*par.g))
-        powersk = ((par.alpha)/(1-par.alpha-par.phi))
-        powersh = ((par.phi)/(1-par.alpha-par.phi))
-
-        sol = self.sol
-
-
-        sol.y = par.A*((x[0]/denominator)**powersk)*((x[1]/denominator)**powersh)
-        y = sol.y 
-        return y
-    
-    #%%
-    def cons_ss(self, x):
-            par = self.par
-            sol =  self.sol
-            sol.cons_ss = self.prod_yss(x)*(1-x[0]-x[1])
-            cons_ss = sol.cons_ss
-
-            return cons_ss
-        
-
-    def sol_golden_cons_ss(self, x, analytical=True):
-        
-        par = self.par
-
-        if analytical == True:
-            
-            cons = ({'type': 'ineq', 'fun': lambda x:  1- x[0] - x[1]})
-            bnds = ((1e-8,1), (1e-8, 1))
-
-            x0 = [1e-5, 1e-5]
-
-            self.prod_yss(x)
-
-            min_cons = lambda x: -1*self.cons_ss(x)
-            gg = optimize.minimize(min_cons, x0=x0, method='SLSQP', bounds=bnds, constraints=cons, tol=1e-8)
-            return gg
-        else: 
-            print("Ikke analytisk")
+#%%
+#
+#    def prod_yss(self, x):
+#        par = self.par
+#
+#        denominator = (par.n+par.g+par.delta+(par.n*par.g))
+#        powersk = ((par.alpha)/(1-par.alpha-par.phi))
+#        powersh = ((par.phi)/(1-par.alpha-par.phi))
+#
+#        sol = self.sol
+#
+#
+#        sol.y = par.A*((x[0]/denominator)**powersk)*((x[1]/denominator)**powersh)
+#        y = sol.y 
+#        return y
+#    
+#    #%%
+#    def cons_ss(self, x):
+#            par = self.par
+#            sol =  self.sol
+#            sol.cons_ss = self.prod_yss(x)*(1-x[0]-x[1])
+#            cons_ss = sol.cons_ss
+#
+#            return cons_ss
+#        
+#
+#    def sol_golden_cons_ss(self, x, analytical=True):
+#        
+#        par = self.par
+#
+#        if analytical == True:
+#            
+#            cons = ({'type': 'ineq', 'fun': lambda x:  1- x[0] - x[1]})
+#            bnds = ((1e-8,1), (1e-8, 1))
+#
+#            x0 = [1e-5, 1e-5]
+#
+#            self.prod_yss(x)
+#
+#            min_cons = lambda x: -1*self.cons_ss(x)
+#            gg = optimize.minimize(min_cons, x0=x0, method='SLSQP', bounds=bnds, constraints=cons, tol=1e-8)
+#            return gg
+#        else: 
+#            print("Ikke analytisk")
