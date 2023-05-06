@@ -78,5 +78,5 @@ class Solow():
             t += 1
         print(t)
         # print(y_tilde)
-        return y_tilde[:t], k_tilde[:t], h_tilde[:t]
+        return y_tilde[:t+1], k_tilde[:t+1], h_tilde[:t+1]
             
