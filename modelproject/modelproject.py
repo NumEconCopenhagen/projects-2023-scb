@@ -21,8 +21,8 @@ class Solow():
         par = self.par
 
         par.production_function = 'cobb-douglas'
-        par.alpha = 0.3
-        par.phi = 0.3
+        par.alpha = 1/3
+        par.phi = 1/3
 
         par.n = 0.01    
         par.g = 0.02
