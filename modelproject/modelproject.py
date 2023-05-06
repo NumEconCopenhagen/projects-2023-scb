@@ -31,6 +31,9 @@ class Solow():
         par.H_init = 0.5
         par.L_init = 1
 
+    def find_opt_s(self):
+        
+
     
 
 
