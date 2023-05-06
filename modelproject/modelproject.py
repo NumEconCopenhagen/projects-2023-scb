@@ -37,7 +37,7 @@ class Solow():
         par.simT = 200
 
     
-    def find_steady_state(self, sK=0.07, sH=0.12, tol=1e-6):
+    def find_steady_state(self, sK=0.12, sH=0.07, tol=1e-6):
 
         par = self.par
 
@@ -65,7 +65,7 @@ class Solow():
             L[t+1] = L[t]*(1+par.n) 
 
             H[t+1] = Y[t]*sH + (1-par.delta)*H[t]
-            K[t+1] = Y[t]*sK + (1-par.delta)*H[t]
+            K[t+1] = Y[t]*sK + (1-par.delta)*K[t]
             
             y_tilde[t] = Y[t]/(A[t]*L[t])
             k_tilde[t] = K[t]/(A[t]*L[t])
