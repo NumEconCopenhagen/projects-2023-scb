@@ -71,7 +71,7 @@ class Solow():
             k_tilde[t] = K[t]/(A[t]*L[t])
             h_tilde[t] = H[t]/(A[t]*L[t])
 
-            if (t>1) and (k_tilde[t]-k_tilde[t-5] < tol) and (h_tilde[t]-h_tilde[t-5] < tol):
+            if (t>1) and (abs(k_tilde[t]-k_tilde[t-1]) < tol) and (abs(h_tilde[t]-h_tilde[t-1]) < tol):
                 print("we are breaking")
                 break
 
