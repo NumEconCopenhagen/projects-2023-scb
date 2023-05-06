@@ -1,9 +1,8 @@
-
-#%%
 from scipy import optimize
 import numpy as np
 import time
 from types import SimpleNamespace
+from scipy import optimize
 
 class Solow():
 
@@ -23,8 +22,8 @@ class Solow():
         par = self.par
 
         par.production_function = 'cobb-douglas'
-        par.alpha = 0.3
-        par.phi = 0.3
+        par.alpha = 1/3
+        par.phi = 1/3
 
         par.n = 0.01    
         par.g = 0.02
@@ -39,7 +38,7 @@ class Solow():
         par.simT = 200
 
     
-    def find_steady_state(self, sK=0.07, sH=0.12, tol=1e-6):
+    def find_steady_state(self, sK=0.12, sH=0.07, tol=1e-6):
 
         par = self.par
 
@@ -50,7 +49,8 @@ class Solow():
         Y = np.empty(par.simT)
         y_tilde = np.empty(par.simT)
         k_tilde = np.empty(par.simT)
-        h_tilde = np.empty(par.simT) 
+        h_tilde = np.empty(par.simT)
+        y_t = np.empty(par.simT)
 
         for i,j in zip([A,K,H,L,Y], [par.A_init, par.K_init,par.H_init,par.L_init,par.Y_init]):
             i[0] = j
@@ -67,11 +67,12 @@ class Solow():
             L[t+1] = L[t]*(1+par.n) 
 
             H[t+1] = Y[t]*sH + (1-par.delta)*H[t]
-            K[t+1] = Y[t]*sK + (1-par.delta)*H[t]
+            K[t+1] = Y[t]*sK + (1-par.delta)*K[t]
             
             y_tilde[t] = Y[t]/(A[t]*L[t])
             k_tilde[t] = K[t]/(A[t]*L[t])
             h_tilde[t] = H[t]/(A[t]*L[t])
+            y_t[t] = Y[t]/L[t]
 
             if (t>1) and (k_tilde[t]-k_tilde[t-1] < tol) and (h_tilde[t]-h_tilde[t-1] < tol):
                 print("we are breaking")
@@ -80,41 +81,79 @@ class Solow():
             t += 1
         print(t)
         # print(y_tilde)
-        return y_tilde[:t], k_tilde[:t], h_tilde[:t]
+        return y_tilde[:t], k_tilde[:t], h_tilde[:t], y_t[:t]
+ 
+    def cons_t(self, sK=0.12, sH=0.07):
+            a = self.find_steady_state(sK=sK, sH=sH)
+            b = a[3]
+            b = (1-sK-sH)*b
+            return b
     
-#%%
-#    def cons_t(self, sK=0.07, sH=0.012):
-#             consumption = (1-sK-sH)*self.find_steady_state(sK=sK, sH=sH, tol=1e-6)
-#             return consumption
+    def negative_cons(self, x):
+        sim_result = self.cons_t(sK=x[0], sH=x[1])
+        ct = -1 * sim_result[-1]
+        return ct
+
+    def find_opt_s(self, discrete=True):
+
+        if discrete == True:
+            s_K = np.linspace(1e-8, 1, 200)
+            s_H = np.linspace(1e-8, 1, 200)
+
+            sk_res = []
+            sh_res = []
+            cons_res = []            
+            for i in s_K:
+                for x in s_H:
+                    if i + x >= 1:
+                        pass
+                    else:
+                        sk_res += [i]
+                        sh_res += [x]
+                        cons = self.cons_t(sK=i, sH=x);
+                        cons_res += [cons[-1]]
+
+            optimal_cons_t = np.max(cons_res)
+            index = cons_res.index(optimal_cons_t)
+            sk_opt = sk_res[index]
+            sh_opt = sk_res[index]
+
+            print(f"Optimal savings rates are sK = {sk_opt} and sH = {sh_opt}", optimal_cons_t)
+            return sk_opt, sh_opt
+        else: 
+            print("Optimal savings rate continoues solution")
+            x = [0, 0]
+            
+            x0 = [0.2, 0.2]
+            cons = ({'type': 'ineq', 'fun': lambda x:  1- x[0] - x[1]})
+            bnds = ((1e-3,1), (1e-3, 1))
+            solcont = optimize.minimize(self.negative_cons, x0=x0, constraints=cons, bounds=bnds, method='Nelder-Mead')
+
+            return solcont
+        
+        #x = np.linspace(0,1,10)
+        #s_K, s_H = np.meshgrid(x,x) # all combinations
+    #
+        #s_K = s_K.ravel() # vector
+        #s_H = s_H.ravel()
 #
-#    def find_opt_s(self):
+    #
+        #cons = self.cons_t(sK=s_K, sH=s_H)
 #
-#        opt = SimpleNamespace()
+        #cons = cons[-1]
+        ## c. set to minus infinity if constraint is broken
+        #I = (s_K+s_H >= 1) # | is "or"
 #
-#        s_K = np.linspace(1e-8, 1, 10)
-#        s_H = np.linspace(1e-8, 1, 10)
+        #cons[I] = -np.inf
+    #
+        ## d. find maximizing argument
+        #j = np.argmax(x)
+        #
+        #opt.s_H = s_H[j]
+        #opt.s_K = s_K[j]
+       #
 #
-#        x = np.linspace(0,1,10)
-#        s_K, s_H = np.meshgrid(x,x) # all combinations
-#    
-#        s_K = s_K.ravel() # vector
-#        s_H = s_H.ravel()
-#
-#    
-#        cons = self.cons_t(sk=s_K, sH=s_H)
-#        # c. set to minus infinity if constraint is broken
-#        I = (s_K+s_H > 1) # | is "or"
-#        cons[I] = -np.inf
-#    
-#        # d. find maximizing argument
-#        j = np.argmax(x)
-#        
-#        opt.s_H = s_H[j]
-#        opt.s_K = s_K[j]
-#       
-#        # b. calculate utility
-#
-#        return opt
+        #return opt
     
 
 
