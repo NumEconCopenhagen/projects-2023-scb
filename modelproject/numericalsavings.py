@@ -79,6 +79,10 @@ class Solow():
         # print(y_tilde)
         return y_tilde[:t-1], k_tilde[:t-1], h_tilde[:t-1], y_t[:t-1]
  
+
+
+
+
     def cons_t(self, sK=0.12, sH=0.07):
             a = self.find_steady_state(sK=sK, sH=sH)
             b = a[3]
