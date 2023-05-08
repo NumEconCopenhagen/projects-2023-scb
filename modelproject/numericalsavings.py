@@ -56,7 +56,7 @@ class Solow():
             i[0] = j
         
         t = 0
-        while t < par.simT:
+        while t < par.simT-1:
 
             if par.production_function == 'cobb-douglas':
                 Y[t] = (K[t]**par.alpha)*(H[t]**par.phi)*(A[t]*L[t])**(1-par.alpha-par.phi)
@@ -74,15 +74,15 @@ class Solow():
             h_tilde[t] = H[t]/(A[t]*L[t])
             y_t[t] = Y[t]/L[t]
 
-            if (t>1) and (k_tilde[t]-k_tilde[t-1] < tol) and (h_tilde[t]-h_tilde[t-1] < tol):
-                print("we are breaking")
-                break
-
             t += 1
         print(t)
         # print(y_tilde)
-        return y_tilde[:t], k_tilde[:t], h_tilde[:t], y_t[:t]
+        return y_tilde[:t-1], k_tilde[:t-1], h_tilde[:t-1], y_t[:t-1]
  
+
+
+
+
     def cons_t(self, sK=0.12, sH=0.07):
             a = self.find_steady_state(sK=sK, sH=sH)
             b = a[3]
@@ -97,8 +97,8 @@ class Solow():
     def find_opt_s(self, discrete=True):
 
         if discrete == True:
-            s_K = np.linspace(1e-8, 1, 200)
-            s_H = np.linspace(1e-8, 1, 200)
+            s_K = np.linspace(1e-8, 1, 40)
+            s_H = np.linspace(1e-8, 1, 40)
 
             sk_res = []
             sh_res = []
