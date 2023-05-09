@@ -2,17 +2,20 @@ from scipy import optimize
 import numpy as np
 import time
 from types import SimpleNamespace
+from matplotlib import pyplot as plt 
+import ipywidgets as widgets
+from ipywidgets import SelectionSlider
 
 class Solow():
 
-    def __init__(self, do_print = True):
+    def __init__(self, do_ = True):
         """ define the model """
 
-        if do_print: print('initialising the model')
+        if do_: ('initialising the model')
 
         self.par = SimpleNamespace()
 
-        if do_print: print('calling .setup()')
+        if do_: ('calling .setup()')
         self.setup()
 
 
@@ -80,13 +83,20 @@ class Solow():
                 steady_state_periods += [t]
                 if do_print == True and t == steady_state_periods[0]:
                     print(f"Steady state reached in period {t}") 
+                    
             t += 1
-        # print(t)
-        # print(y_tilde)
+        # (t)
+        # (y_tilde)
         sim_out.y_tilde = y_tilde [:t-1]
         sim_out.k_tilde = k_tilde[:t-1]
         sim_out.h_tilde = h_tilde[:t-1]
         sim_out.y_t = y_t[:t-1]
+        sim_out.A = A[:t-1]
+        sim_out.K = K[:t-1]
+        sim_out.H = H[:t-1]
+        sim_out.L = L[:t-1]
+        sim_out.steadystate_t = steady_state_periods[0]
+
         sim_out.t = np.linspace(0, len(y_tilde[:t-1]), 1)
 
         sim_out.sK = sK
@@ -154,7 +164,7 @@ class Solow():
             sk_opt = sk_res[index] # save corresponding solution for s_K
             sh_opt = sk_res[index] # save corresponding solution for s_H
 
-            print(f"Optimal savings rates are sK = {sk_opt} and sH = {sh_opt}")
+            (f"Optimal savings rates are sK = {sk_opt} and sH = {sh_opt}")
             sol_save.sK_opt = sk_opt # save optimal savings rate 
             sol_save.sH_opt = sh_opt # save optimal savings rate
             sol_save.cons_T_opt = optimal_cons_t #save optimal consumption in period T 
@@ -164,7 +174,7 @@ class Solow():
             return  sol_save
         
         else: 
-            print("Optimal savings rate continoues solution")
+            ("Optimal savings rate continoues solution")
             
             x0 = [0.2, 0.2] #initial values for optimisation
             cons = ({'type': 'ineq', 'fun': lambda x:  1- x[0] - x[1]}) #constraint (actually not used with 'Nelder-Mead' where a penalty function could have been implemented instead)
@@ -177,3 +187,52 @@ class Solow():
             sol_save.cons_t = solcont.fun
 
             return sol_save
+        
+    def plotbaseline_vs_new_sh(self, new_sH):
+        """
+        Returns: interactive plot comparing baseline with the post shock
+        
+        Args: New sH value not larger than 1 or smaller than 0.
+        
+        """
+        par = self.par
+        par.A_init = 1
+        par.K_init = 1
+        par.H_init = 1
+        par.L_init = 1
+
+        baseline_result = self.find_steady_state(sK=0.12, sH=0.07)
+        
+        ss_t = baseline_result.steadystate_t
+
+        baseline_result.y_tilde = baseline_result.y_tilde[ss_t:]
+        baseline_result.k_tilde = baseline_result.k_tilde[ss_t:]
+        baseline_result.h_tilde = baseline_result.h_tilde[ss_t:]
+
+        
+        self.par.A_init = baseline_result.A[ss_t]
+        self.par.K_init = baseline_result.K[ss_t]
+        self.par.L_init = baseline_result.L[ss_t]
+        self.par.H_init = baseline_result.H[ss_t]
+
+        post_shock = self.find_steady_state(sK=0.12, sH=new_sH, do_print=False)
+
+        post_shock_periods_index = int(self.par.simT)- 2 - len(baseline_result.k_tilde)
+        
+        post_shock.y_tilde  =  post_shock.y_tilde[:-post_shock_periods_index]
+        post_shock.k_tilde  =  post_shock.k_tilde[:-post_shock_periods_index]
+        post_shock.h_tilde  =  post_shock.h_tilde[:-post_shock_periods_index]
+
+        fig, ax = plt.subplots(nrows=1, ncols=1, dpi=120)
+        ax.clear()
+        ax.plot(baseline_result.y_tilde, label='y_tilde baseline')
+        ax.plot(post_shock.y_tilde, label='y_tilde post shock')
+        ax.plot(baseline_result.k_tilde, label='k_tilde baseline')
+        ax.plot(post_shock.k_tilde, label='k_tilde post shock')
+        ax.plot(baseline_result.h_tilde, label = 'h_tilde baseline')
+        ax.plot(post_shock.h_tilde, label = 'h_tilde post shock')
+        ax.legend(loc='upper right')
+   
+    def plotbaseline_vs_new_sh_intactive(self):
+        out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=SelectionSlider(value= 0, options=list(np.linspace(0,1,20))))
+        return out
