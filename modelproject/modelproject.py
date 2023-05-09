@@ -84,9 +84,8 @@ class Solow():
 
             if (t>1) and (abs(k_tilde[t]-k_tilde[t-1]) < tol) and (abs(h_tilde[t]-h_tilde[t-1]) < tol):
                 steady_state_periods += [t]
-                if do_print == True and t == steady_state_periods[0]:
+                if (do_print == True) and (t == steady_state_periods[0]):
                     print(f"Steady state reached in period {t}") 
-                    
             t += 1
         # (t)
         # (y_tilde)
@@ -241,5 +240,5 @@ class Solow():
 
    
     def plotbaseline_vs_new_sh_intactive(self):
-        out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=widgets.FloatSlider(min= 0, max=0.07, step=0.001, value=0))
+        out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=widgets.SelectionSlider(options=np.linspace(0,0.07,40), value=0))
         return display(out)
