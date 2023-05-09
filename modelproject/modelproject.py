@@ -101,7 +101,7 @@ class Solow():
         u = par.n + par.g + par.delta + par.g*par.delta
 
         anal_sol.k_tilde = (par.sK/u)**((1-par.phi)/(1-par.phi-par.alpha))*(par.sH/u)**(par.phi/(1-par.phi-par.alpha))
-        anal_sol.h_tilde = (par.sH/u)**((1-par.phi)/(1-par.phi-par.alpha))*(par.sK/u)**(par.alpha/(1-par.phi-par.alpha))
+        anal_sol.h_tilde = (par.sH/u)**((1-par.alpha)/(1-par.phi-par.alpha))*(par.sK/u)**(par.alpha/(1-par.phi-par.alpha))
         anal_sol.y_tilde = anal_sol.k_tilde**par.alpha*anal_sol.h_tilde**par.phi
 
         return anal_sol 
