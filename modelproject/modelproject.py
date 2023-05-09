@@ -2,9 +2,12 @@ from scipy import optimize
 import numpy as np
 import time
 from types import SimpleNamespace
+import matplotlib
 from matplotlib import pyplot as plt 
 import ipywidgets as widgets
-from ipywidgets import SelectionSlider
+from ipywidgets import Output, SelectionSlider
+from IPython.display import display, clear_output
+
 
 class Solow():
 
@@ -222,7 +225,7 @@ class Solow():
         post_shock.y_tilde  =  post_shock.y_tilde[:-post_shock_periods_index]
         post_shock.k_tilde  =  post_shock.k_tilde[:-post_shock_periods_index]
         post_shock.h_tilde  =  post_shock.h_tilde[:-post_shock_periods_index]
-
+        plt.close('all')
         fig, ax = plt.subplots(nrows=1, ncols=1, dpi=120)
         ax.clear()
         ax.plot(baseline_result.y_tilde, label='y_tilde baseline')
@@ -231,8 +234,12 @@ class Solow():
         ax.plot(post_shock.k_tilde, label='k_tilde post shock')
         ax.plot(baseline_result.h_tilde, label = 'h_tilde baseline')
         ax.plot(post_shock.h_tilde, label = 'h_tilde post shock')
+
         ax.legend(loc='upper right')
+        plt.plot()
+
+
    
     def plotbaseline_vs_new_sh_intactive(self):
-        out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=SelectionSlider(value= 0, options=list(np.linspace(0,1,20))))
-        return out
+        out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=widgets.FloatSlider(min= 0, max=0.07, step=0.001, value=0))
+        return display(out)
