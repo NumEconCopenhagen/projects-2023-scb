@@ -87,7 +87,7 @@ class Solow():
         sim_out.h_tilde = h_tilde[:t-1]
         sim_out.y_t = y_t[:t-1]
         sim_out.t = np.linspace(0, len(y_tilde[:t-1]), 1)
-
+        
         return sim_out
     
     def cons_t(self, sK=0.12, sH=0.07):
