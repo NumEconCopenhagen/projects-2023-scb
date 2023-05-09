@@ -32,7 +32,6 @@ class Solow():
         par.K_init = 1
         par.H_init = 1
         par.L_init = 1
-        par.Y_init = 1
 
         par.simT = 200
 
@@ -53,7 +52,7 @@ class Solow():
         
         steady_state_periods = []
 
-        for i,j in zip([A,K,H,L,Y], [par.A_init, par.K_init,par.H_init,par.L_init,par.Y_init]):
+        for i,j in zip([A,K,H,L,Y], [par.A_init, par.K_init,par.H_init,par.L_init]):
             i[0] = j
         
         t = 0
@@ -88,8 +87,23 @@ class Solow():
         sim_out.y_t = y_t[:t-1]
         sim_out.t = np.linspace(0, len(y_tilde[:t-1]), 1)
 
+        sim_out.sK = sK
+        sim_out.sH = sH 
+
         return sim_out
     
+    def anal_steady_state(self):
+        anal_sol = self.sim_out = SimpleNamespace()
+        par = self.par 
+
+        u = par.n + par.g + par.delta + par.g*par.delta
+
+        anal_sol.k_tilde = (par.sK/u)**((1-par.phi)/(1-par.phi-par.alpha))*(par.sH/u)**(par.phi/(1-par.phi-par.alpha))
+        anal_sol.h_tilde = (par.sH/u)**((1-par.phi)/(1-par.phi-par.alpha))*(par.sK/u)**(par.alpha/(1-par.phi-par.alpha))
+        anal_sol.y_tilde = anal_sol.k_tilde**par.alpha*anal_sol.h_tilde**par.phi
+
+        return anal_sol 
+
     def cons_t(self, sK=0.12, sH=0.07):
             
             """returns consumption from """
