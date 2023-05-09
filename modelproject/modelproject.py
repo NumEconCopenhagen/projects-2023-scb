@@ -32,7 +32,6 @@ class Solow():
         par.K_init = 1
         par.H_init = 1
         par.L_init = 1
-        par.Y_init = 1
 
         par.simT = 200
 
@@ -53,7 +52,7 @@ class Solow():
         
         steady_state_periods = []
 
-        for i,j in zip([A,K,H,L,Y], [par.A_init, par.K_init,par.H_init,par.L_init,par.Y_init]):
+        for i,j in zip([A,K,H,L,Y], [par.A_init, par.K_init,par.H_init,par.L_init]):
             i[0] = j
         
         t = 0
