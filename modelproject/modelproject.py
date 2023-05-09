@@ -92,6 +92,18 @@ class Solow():
 
         return sim_out
     
+    def anal_steady_state(self):
+        anal_sol = self.sim_out = SimpleNamespace()
+        par = self.par 
+
+        u = par.n + par.g + par.delta + par.g*par.delta
+
+        anal_sol.k_tilde = (par.sK/u)**((1-par.phi)/(1-par.phi-par.alpha))*(par.sH/u)**(par.phi/(1-par.phi-par.alpha))
+        anal_sol.h_tilde = (par.sH/u)**((1-par.phi)/(1-par.phi-par.alpha))*(par.sK/u)**(par.alpha/(1-par.phi-par.alpha))
+        anal_sol.y_tilde = anal_sol.k_tilde**par.alpha*anal_sol.h_tilde**par.phi
+
+        return anal_sol 
+
     def cons_t(self, sK=0.12, sH=0.07):
             
             """returns consumption from """
@@ -162,6 +174,4 @@ class Solow():
             sol_save.sH = solcont.x[1]
             sol_save.cons_t = solcont.fun
 
-            return sol_save 
-        
-
+            return sol_save
