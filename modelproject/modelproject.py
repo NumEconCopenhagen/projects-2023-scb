@@ -160,6 +160,4 @@ class Solow():
             sol_save.sH = solcont.x[1]
             sol_save.cons_t = solcont.fun
 
-            return sol_save 
-        
-
+            return sol_save
