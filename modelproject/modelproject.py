@@ -243,7 +243,7 @@ class Solow():
         out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=widgets.SelectionSlider(options=np.linspace(0,0.07,40), value=0))
         return display(out)
     
-    def plot_convergence(self,H_init, K_init):
+    def plot_convergence(self,null_k_func, null_h_func, H_init, K_init):
 
         """ 
         Returns: graph of null clines from analytical solution and simulated convergence
@@ -253,9 +253,7 @@ class Solow():
         
         NOTE:  Requires defined analytical functions for null clines """
     
-        felix = Solow()
-        par = felix.par 
-        par.simT = 1000
+
         # ii. change initial values (outside steady state)
     
         par.A_init = 1
@@ -265,7 +263,7 @@ class Solow():
         par.Y_init = 1
 
         # iii. extract simulation & unpack 
-        sim_out = felix.find_steady_state() 
+        sim_out = model.find_steady_state() 
         k_t = sim_out.k_tilde
         h_t = sim_out.h_tilde
 
@@ -299,6 +297,6 @@ class Solow():
         ax.legend(loc='upper left');
     
     def plot_convergence_interactive(self):
-        out=widgets.interact(plot_convergence, H_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5),
+        out=widgets.interact(self.plot_convergence, H_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5),
                             K_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5))
         return display(out)
