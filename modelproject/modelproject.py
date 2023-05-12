@@ -41,7 +41,7 @@ class Solow():
         par.H_init = 1
         par.L_init = 1
 
-        par.simT = 200
+        par.simT = 1000
 
     
     def find_steady_state(self, sK=0.12, sH=0.07, tol=1e-6, do_print=False):
@@ -60,7 +60,7 @@ class Solow():
         
         steady_state_periods = []
 
-        for i,j in zip([A,K,H,L,Y], [par.A_init, par.K_init,par.H_init,par.L_init]):
+        for i,j in zip([A,K,H,L], [par.A_init, par.K_init,par.H_init,par.L_init]):
             i[0] = j
         
         t = 0
