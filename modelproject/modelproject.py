@@ -292,6 +292,7 @@ class Solow():
         # d. plot results
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
+        ax.clear()
         ax.plot(k_tilde_vec, null_k_val, label = r'$ \Delta \tilde{k}_t = 0$')
         ax.plot(k_tilde_vec, null_h_val, label = r'$ \Delta \tilde{h}_t = 0$')
         ax.plot(k_t, h_t, label='simulation', linestyle = "dotted", linewidth = 2)
