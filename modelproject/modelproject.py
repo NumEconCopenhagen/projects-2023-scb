@@ -243,7 +243,13 @@ class Solow():
         out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=widgets.SelectionSlider(options=np.linspace(0,0.07,40), value=0))
         return display(out)
     
-    def plot_convergence(self,null_k_func, null_h_func, H_init, K_init):
+    def null_k_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_K):  # analytical nullcline for k
+            return (ktilde_t**(1 - alpha)*(delta + g*n + g + n)/s_K)**(phi**(-1.0))
+    def null_h_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_H): # analytical nullcline for h
+            return (ktilde_t**(-alpha)*(delta + g*n + g + n)/s_H)**((phi - 1)**(-1.0))
+
+
+    def plot_convergence(self, H_init, K_init):
 
         """ 
         Returns: graph of null clines from analytical solution and simulated convergence
@@ -279,8 +285,9 @@ class Solow():
         k_tilde_vec = np.linspace(1e-10, max(k_t)+1, 100)
 
         # iii. insert in lamdified nullclines
-        null_k_val = null_k_func(k_tilde_vec,alpha_val,delta_val,g_val, n_val, phi_val, sK_val)
-        null_h_val = null_h_func(k_tilde_vec,alpha_val,delta_val,g_val, n_val, phi_val, sH_val)
+        # Values for analytical null clines
+        null_k_val = self.null_k_func_anal(k_tilde_vec,alpha_val,delta_val,g_val, n_val, phi_val, sK_val)
+        null_h_val = self.null_h_func_anal(k_tilde_vec,alpha_val,delta_val,g_val, n_val, phi_val, sH_val)
 
         # d. plot results
         fig = plt.figure()
@@ -292,7 +299,8 @@ class Solow():
         ax.set_xlabel(r'$\tilde{k}_t$',)
         ax.set_ylabel(r'$\tilde{h}_t$',)
 
-        ax.legend(loc='upper left');
+        ax.legend(loc='upper left')
+        ax.plot()
     
     def plot_convergence_interactive(self):
         out=widgets.interact(self.plot_convergence, H_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5),
