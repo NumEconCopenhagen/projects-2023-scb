@@ -203,7 +203,7 @@ class Solow():
         par.H_init = 1
         par.L_init = 1
 
-        baseline_result = self.find_steady_state(sK=0.12, sH=0.07)
+        baseline_result = self.find_steady_state(sK=0.2, sH=0.15)
         
         ss_t = baseline_result.steadystate_t
 
@@ -217,7 +217,7 @@ class Solow():
         self.par.L_init = baseline_result.L[ss_t]
         self.par.H_init = baseline_result.H[ss_t]
 
-        post_shock = self.find_steady_state(sK=0.12, sH=new_sH, do_print=False)
+        post_shock = self.find_steady_state(sK=0.2, sH=new_sH, do_print=False)
 
         post_shock_periods_index = int(self.par.simT)- 2 - len(baseline_result.k_tilde)
         
