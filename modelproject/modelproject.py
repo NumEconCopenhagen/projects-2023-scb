@@ -252,39 +252,37 @@ class Solow():
         discrete, float, initial values for K and H
         
         NOTE:  Requires defined analytical functions for null clines """
-    
+        
+        par = self.par 
 
-        # ii. change initial values (outside steady state)
-    
-        par.A_init = 1
-        par.K_init = K_init
+        # a. define initial value
         par.H_init = H_init
-        par.L_init = 1
-        par.Y_init = 1
+        par.K_init = K_init
 
-        # iii. extract simulation & unpack 
-        sim_out = model.find_steady_state() 
+        # b. extract simulation & unpack 
+        sim_out = self.find_steady_state() 
         k_t = sim_out.k_tilde
         h_t = sim_out.h_tilde
 
-        # b. insert parameter values from simulation in nullclines  
+        # c. insert parameter values from simulation in nullclines  
         # i. define values 
         alpha_val = par.alpha
         delta_val = par.delta
         g_val = par.g
         n_val = par.n
         phi_val = par.phi
+        
         sK_val = sim_out.sK
         sH_val = sim_out.sH
 
-        # ii. find range of k_tilde
+        # ii. find range of k_tilde for plot
         k_tilde_vec = np.linspace(1e-10, max(k_t)+1, 100)
 
-        # ii. insert in lamdified nullclines
+        # iii. insert in lamdified nullclines
         null_k_val = null_k_func(k_tilde_vec,alpha_val,delta_val,g_val, n_val, phi_val, sK_val)
         null_h_val = null_h_func(k_tilde_vec,alpha_val,delta_val,g_val, n_val, phi_val, sH_val)
 
-            # c. plot results
+        # d. plot results
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
 
