@@ -110,7 +110,7 @@ class Solow():
         anal_sol = self.sim_out = SimpleNamespace()
         par = self.par 
 
-        u = par.n + par.g + par.delta + par.g*par.delta
+        u = par.n + par.g + par.delta + par.g*par.n
 
         anal_sol.k_tilde = (par.sK/u)**((1-par.phi)/(1-par.phi-par.alpha))*(par.sH/u)**(par.phi/(1-par.phi-par.alpha))
         anal_sol.h_tilde = (par.sH/u)**((1-par.alpha)/(1-par.phi-par.alpha))*(par.sK/u)**(par.alpha/(1-par.phi-par.alpha))
