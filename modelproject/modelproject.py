@@ -244,6 +244,14 @@ class Solow():
         return display(out)
     
     def plot_convergence(self,H_init, K_init):
+
+        """ 
+        Returns: graph of null clines from analytical solution and simulated convergence
+        
+        Args: 
+        discrete, float, initial values for K and H
+        
+        NOTE:  Requires defined analytical functions for null clines """
     
         felix = Solow()
         par = felix.par 
