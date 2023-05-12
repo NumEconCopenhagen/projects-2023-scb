@@ -33,8 +33,8 @@ class Solow():
         par.n = 0.01    
         par.g = 0.02
         par.delta = 0.05
-        par.sH = 0.07
-        par.sK = 0.12
+        par.sH = 0.15
+        par.sK = 0.2
         
         par.A_init = 1
         par.K_init = 1
@@ -44,7 +44,7 @@ class Solow():
         par.simT = 1000
 
     
-    def find_steady_state(self, sK=0.12, sH=0.07, tol=1e-6, do_print=False):
+    def find_steady_state(self, sK=0.2, sH=0.15, tol=1e-6, do_print=False):
         sim_out = self.sim_out = SimpleNamespace()
         par = self.par
 
@@ -110,7 +110,7 @@ class Solow():
         anal_sol = self.sim_out = SimpleNamespace()
         par = self.par 
 
-        u = par.n + par.g + par.delta + par.g*par.delta
+        u = par.n + par.g + par.delta + par.g*par.n
 
         anal_sol.k_tilde = (par.sK/u)**((1-par.phi)/(1-par.phi-par.alpha))*(par.sH/u)**(par.phi/(1-par.phi-par.alpha))
         anal_sol.h_tilde = (par.sH/u)**((1-par.alpha)/(1-par.phi-par.alpha))*(par.sK/u)**(par.alpha/(1-par.phi-par.alpha))
@@ -118,7 +118,7 @@ class Solow():
 
         return anal_sol 
 
-    def cons_t(self, sK=0.12, sH=0.07):
+    def cons_t(self, sK=0.2, sH=0.15):
             
             """returns consumption from """
             sim_out= self.find_steady_state(sK=sK, sH=sH)
