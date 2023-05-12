@@ -292,7 +292,6 @@ class Solow():
         # d. plot results
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
-
         ax.plot(k_tilde_vec, null_k_val, label = r'$ \Delta \tilde{k}_t = 0$')
         ax.plot(k_tilde_vec, null_h_val, label = r'$ \Delta \tilde{h}_t = 0$')
         ax.plot(k_t, h_t, label='simulation', linestyle = "dotted", linewidth = 2)
@@ -300,9 +299,9 @@ class Solow():
         ax.set_ylabel(r'$\tilde{h}_t$',)
 
         ax.legend(loc='upper left')
-        ax.plot()
+        plt.plot()
     
     def plot_convergence_interactive(self):
-        out=widgets.interact(self.plot_convergence, H_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5),
+        out2=widgets.interact(self.plot_convergence, H_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5),
                             K_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5))
-        return display(out)
+        return display(out2)
