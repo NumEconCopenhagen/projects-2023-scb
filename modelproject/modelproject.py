@@ -32,9 +32,9 @@ class Solow():
 
         par.n = 0.01    
         par.g = 0.02
-        par.delta = 0.06
-        par.sH = 0.07
-        par.sK = 0.12
+        par.delta = 0.05
+        par.sH = 0.15
+        par.sK = 0.2
         
         par.A_init = 1
         par.K_init = 1
