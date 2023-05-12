@@ -240,7 +240,7 @@ class Solow():
 
    
     def plotbaseline_vs_new_sh_intactive(self):
-        out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=widgets.SelectionSlider(options=np.linspace(0,0.07,40), value=0))
+        out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=widgets.SelectionSlider(options=np.linspace(0,0.15,40), value=0.15))
         return display(out)
     
     def null_k_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_K):  # analytical nullcline for k
