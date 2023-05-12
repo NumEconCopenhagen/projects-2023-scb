@@ -32,7 +32,7 @@ class Solow():
 
         par.n = 0.01    
         par.g = 0.02
-        par.delta = 0.05
+        par.delta = 0.06
         par.sH = 0.07
         par.sK = 0.12
         
@@ -44,7 +44,7 @@ class Solow():
         par.simT = 1000
 
     
-    def find_steady_state(self, sK=0.12, sH=0.07, tol=1e-6, do_print=False):
+    def find_steady_state(self, sK=0.2, sH=0.15, tol=1e-6, do_print=False):
         sim_out = self.sim_out = SimpleNamespace()
         par = self.par
 
@@ -118,7 +118,7 @@ class Solow():
 
         return anal_sol 
 
-    def cons_t(self, sK=0.12, sH=0.07):
+    def cons_t(self, sK=0.2, sH=0.15):
             
             """returns consumption from """
             sim_out= self.find_steady_state(sK=sK, sH=sH)
