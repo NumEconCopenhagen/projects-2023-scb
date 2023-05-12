@@ -242,3 +242,59 @@ class Solow():
     def plotbaseline_vs_new_sh_intactive(self):
         out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=widgets.SelectionSlider(options=np.linspace(0,0.07,40), value=0))
         return display(out)
+    
+    def plot_convergence(self,null_k_func, null_h_func, H_init, K_init):
+
+        """ 
+        Returns: graph of null clines from analytical solution and simulated convergence
+        
+        Args: 
+        discrete, float, initial values for K and H
+        
+        NOTE:  Requires defined analytical functions for null clines """
+        
+        par = self.par 
+
+        # a. define initial value
+        par.H_init = H_init
+        par.K_init = K_init
+
+        # b. extract simulation & unpack 
+        sim_out = self.find_steady_state() 
+        k_t = sim_out.k_tilde
+        h_t = sim_out.h_tilde
+
+        # c. insert parameter values from simulation in nullclines  
+        # i. define values 
+        alpha_val = par.alpha
+        delta_val = par.delta
+        g_val = par.g
+        n_val = par.n
+        phi_val = par.phi
+        
+        sK_val = sim_out.sK
+        sH_val = sim_out.sH
+
+        # ii. find range of k_tilde for plot
+        k_tilde_vec = np.linspace(1e-10, max(k_t)+1, 100)
+
+        # iii. insert in lamdified nullclines
+        null_k_val = null_k_func(k_tilde_vec,alpha_val,delta_val,g_val, n_val, phi_val, sK_val)
+        null_h_val = null_h_func(k_tilde_vec,alpha_val,delta_val,g_val, n_val, phi_val, sH_val)
+
+        # d. plot results
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+
+        ax.plot(k_tilde_vec, null_k_val, label = r'$ \Delta \tilde{k}_t = 0$')
+        ax.plot(k_tilde_vec, null_h_val, label = r'$ \Delta \tilde{h}_t = 0$')
+        ax.plot(k_t, h_t, label='simulation', linestyle = "dotted", linewidth = 2)
+        ax.set_xlabel(r'$\tilde{k}_t$',)
+        ax.set_ylabel(r'$\tilde{h}_t$',)
+
+        ax.legend(loc='upper left');
+    
+    def plot_convergence_interactive(self):
+        out=widgets.interact(self.plot_convergence, H_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5),
+                            K_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5))
+        return display(out)
