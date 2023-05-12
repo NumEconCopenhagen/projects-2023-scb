@@ -290,7 +290,7 @@ class Solow():
 
     ax.legend(loc='upper left');
     
-def convergence_interactive(self):
+def plot_convergence_interactive(self):
     out=widgets.interact(plot_convergence, H_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5),
                          K_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5))
     return display(out)
