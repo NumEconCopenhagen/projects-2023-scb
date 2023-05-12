@@ -242,3 +242,55 @@ class Solow():
     def plotbaseline_vs_new_sh_intactive(self):
         out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=widgets.SelectionSlider(options=np.linspace(0,0.07,40), value=0))
         return display(out)
+    
+    def plot_convergence(self,H_init, K_init):
+    
+    felix = Solow()
+    par = felix.par 
+    par.simT = 1000
+    # ii. change initial values (outside steady state)
+   
+    par.A_init = 1
+    par.K_init = K_init
+    par.H_init = H_init
+    par.L_init = 1
+    par.Y_init = 1
+
+    # iii. extract simulation & unpack 
+    sim_out = felix.find_steady_state() 
+    k_t = sim_out.k_tilde
+    h_t = sim_out.h_tilde
+
+    # b. insert parameter values from simulation in nullclines  
+    # i. define values 
+    alpha_val = par.alpha
+    delta_val = par.delta
+    g_val = par.g
+    n_val = par.n
+    phi_val = par.phi
+    sK_val = sim_out.sK
+    sH_val = sim_out.sH
+
+    # ii. find range of k_tilde
+    k_tilde_vec = np.linspace(1e-10, max(k_t)+1, 100)
+
+    # ii. insert in lamdified nullclines
+    null_k_val = null_k_func(k_tilde_vec,alpha_val,delta_val,g_val, n_val, phi_val, sK_val)
+    null_h_val = null_h_func(k_tilde_vec,alpha_val,delta_val,g_val, n_val, phi_val, sH_val)
+
+        # c. plot results
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+
+    ax.plot(k_tilde_vec, null_k_val, label = r'$ \Delta \tilde{k}_t = 0$')
+    ax.plot(k_tilde_vec, null_h_val, label = r'$ \Delta \tilde{h}_t = 0$')
+    ax.plot(k_t, h_t, label='simulation', linestyle = "dotted", linewidth = 2)
+    ax.set_xlabel(r'$\tilde{k}_t$',)
+    ax.set_ylabel(r'$\tilde{h}_t$',)
+
+    ax.legend(loc='upper left');
+    
+def convergence_interactive(self):
+    out=widgets.interact(plot_convergence, H_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5),
+                         K_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5))
+    return display(out)
