@@ -25,6 +25,9 @@ class HouseholdSpecializationModelClass:
         par.epsilon = 1.0
         par.omega = 0.5 
 
+        # Emasculating preference parameter
+        par.psi = 1
+
         # c. household production
         par.alpha = 0.5
         par.sigma = 1.0
@@ -100,8 +103,11 @@ class HouseholdSpecializationModelClass:
         epsilon_ = 1+1/par.epsilon
         TM = LM+HM
         TF = LF+HF
-        disutility = par.nu*(TM**epsilon_/epsilon_+TF**epsilon_/epsilon_)
-        
+        if par.psi ==1:
+            disutility = par.nu*(TM**epsilon_/epsilon_+TF**epsilon_/epsilon_)
+        else:
+            disutility = par.nu*((LM+par.psi*HM)**epsilon_/epsilon_+TF**epsilon_/epsilon_)
+
         return utility - disutility
 
     def solve_discrete(self,do_print=False):
@@ -242,8 +248,13 @@ class HouseholdSpecializationModelClass:
            return error
 
 
-    def estimate(self,alpha=None,sigma=None):
-        """estimate alpha and sigma"""
+    def estimate(self,parnames,alpha=None,sigma=None):
+        """
+        Key words: parnames --> parameters to estimated
+
+        Returns: Estimated parameters.
+        """
+
         par = self.par
         # objective function = loss function
         def obj(x, parnames, do_print=False): 
@@ -258,8 +269,7 @@ class HouseholdSpecializationModelClass:
              # c. compare with data
              error = self.error_function()
              return error
-        parnames = ['alpha','sigma']
-        x0 = [par.__dict__[parname] for parname in parnames]
+        x0 = [par.__dict__[parname] for parname in parnames] #set x0 equal to the specified self.par.name. 
         bounds = ((0,1),(0,100))
         res = optimize.minimize(obj,x0,bounds=bounds,method='nelder-mead',args=(parnames), tol=1e-10)
         assert res.success
