@@ -4,4 +4,6 @@ Our project is titled **The Solow Model with Human Capital** and is about the an
 
 The **results** of the project can be seen from running [modelproject.ipynb](modelproject.ipynb).
 
+We use several functions defined in the **class** Solow in [modelproject.py](modelproject.py)
+
 **Dependencies:** Apart from a standard Anaconda Python 3 installation, the project requires no further packages.
