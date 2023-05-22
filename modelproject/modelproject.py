@@ -141,11 +141,77 @@ class Solow():
         anal_sol.y_tilde = anal_sol.k_tilde**par.alpha*anal_sol.h_tilde**par.phi
 
         return anal_sol 
+    
+        def null_k_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_K):
+            # analytical nullcline for k  
+            return (ktilde_t**(1 - alpha)*(delta + g*n + g + n)/s_K)**(phi**(-1.0))
+    def null_h_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_H): 
+            # analytical nullcline for h
+            return (ktilde_t**(-alpha)*(delta + g*n + g + n)/s_H)**((phi - 1)**(-1.0))
+
+
+    def plot_convergence(self, H_init, K_init):
+
+        """ 
+        Returns: graph of null clines from analytical solution and simulated convergence
+        
+        Args: 
+        discrete, float, initial values for K and H
+        
+        """
+        
+        par = self.par 
+
+        # a. define initial value
+        par.H_init = H_init
+        par.K_init = K_init
+
+        # b. extract simulation & unpack 
+        sim_out = self.find_steady_state() 
+        k_t = sim_out.k_tilde
+        h_t = sim_out.h_tilde
+
+        # c. insert parameter values from simulation in nullclines  
+        # i. define values 
+        alpha_val = par.alpha
+        delta_val = par.delta
+        g_val = par.g
+        n_val = par.n
+        phi_val = par.phi
+        
+        sK_val = sim_out.sK
+        sH_val = sim_out.sH
+
+        # ii. find range of k_tilde for plot
+        k_tilde_vec = np.linspace(1e-10, max(k_t)+5, 100)
+
+        # iii. insert in lamdified nullclines
+        # Values for analytical null clines
+        null_k_val = self.null_k_func_anal(k_tilde_vec,alpha_val,delta_val,g_val, n_val, phi_val, sK_val)
+        null_h_val = self.null_h_func_anal(k_tilde_vec,alpha_val,delta_val,g_val, n_val, phi_val, sH_val)
+
+        # d. plot results
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+        ax.clear()
+        ax.plot(k_tilde_vec, null_k_val, label = r'$ \Delta \tilde{k}_t = 0$')
+        ax.plot(k_tilde_vec, null_h_val, label = r'$ \Delta \tilde{h}_t = 0$')
+        ax.plot(k_t, h_t, label='simulation', linestyle = "dotted", linewidth = 2)
+        ax.set_xlabel(r'$\tilde{k}_t$',)
+        ax.set_ylabel(r'$\tilde{h}_t$',)
+
+        ax.legend(loc='upper left')
+        plt.plot()
+    
+    def plot_convergence_interactive(self):
+        out2=widgets.interact(self.plot_convergence, H_init = widgets.SelectionSlider(options=np.linspace(0,50,51), value=40),
+                            K_init = widgets.SelectionSlider(options=np.linspace(0,50,51), value=15))
+        return display(out2)
 
     def cons_t(self, sK=0.2, sH=0.15):
         """
         Returns: consumption vector from simulation 
-            
+        
         """
 
         sim_out= self.find_steady_state(sK=sK, sH=sH)
@@ -295,16 +361,16 @@ class Solow():
         post_shock.k_tilde  =  post_shock.k_tilde[:-post_shock_periods_index]
         post_shock.h_tilde  =  post_shock.h_tilde[:-post_shock_periods_index]
 
-        # c. plot 
-        # plt.close('all')
+        # c. plot results from a. and b. 
         fig, ax = plt.subplots(nrows=1, ncols=1, dpi=120)
-        ax.clear()
-        ax.plot(baseline_result.y_tilde, label='y_tilde baseline')
-        ax.plot(post_shock.y_tilde, label='y_tilde post shock')
-        ax.plot(baseline_result.k_tilde, label='k_tilde baseline')
-        ax.plot(post_shock.k_tilde, label='k_tilde post shock')
-        ax.plot(baseline_result.h_tilde, label = 'h_tilde baseline')
-        ax.plot(post_shock.h_tilde, label = 'h_tilde post shock')
+
+        colors = ['red', 'black', 'orange']  # Set different colors for each variable
+        ax.plot(baseline_result.y_tilde, label='y_tilde baseline', linestyle='--', color=colors[0])
+        ax.plot(post_shock.y_tilde, label='y_tilde post shock', color=colors[0])
+        ax.plot(baseline_result.k_tilde, label='k_tilde baseline', linestyle='--', color=colors[1])
+        ax.plot(post_shock.k_tilde, label='k_tilde post shock', color=colors[1])
+        ax.plot(baseline_result.h_tilde, label='h_tilde baseline', linestyle='--', color=colors[2])
+        ax.plot(post_shock.h_tilde, label='h_tilde post shock', color=colors[2])
 
         ax.legend(loc='center left', bbox_to_anchor = (1, 0.5))
         plt.plot()
@@ -312,69 +378,3 @@ class Solow():
     def plotbaseline_vs_new_sh_intactive(self):
         out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=widgets.SelectionSlider(options=np.linspace(0,0.3,31), value=0.10))
         return display(out)
-    
-    def null_k_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_K):
-            # analytical nullcline for k  
-            return (ktilde_t**(1 - alpha)*(delta + g*n + g + n)/s_K)**(phi**(-1.0))
-    def null_h_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_H): 
-            # analytical nullcline for h
-            return (ktilde_t**(-alpha)*(delta + g*n + g + n)/s_H)**((phi - 1)**(-1.0))
-
-
-    def plot_convergence(self, H_init, K_init):
-
-        """ 
-        Returns: graph of null clines from analytical solution and simulated convergence
-        
-        Args: 
-        discrete, float, initial values for K and H
-        
-        """
-        
-        par = self.par 
-
-        # a. define initial value
-        par.H_init = H_init
-        par.K_init = K_init
-
-        # b. extract simulation & unpack 
-        sim_out = self.find_steady_state() 
-        k_t = sim_out.k_tilde
-        h_t = sim_out.h_tilde
-
-        # c. insert parameter values from simulation in nullclines  
-        # i. define values 
-        alpha_val = par.alpha
-        delta_val = par.delta
-        g_val = par.g
-        n_val = par.n
-        phi_val = par.phi
-        
-        sK_val = sim_out.sK
-        sH_val = sim_out.sH
-
-        # ii. find range of k_tilde for plot
-        k_tilde_vec = np.linspace(1e-10, max(k_t)+5, 100)
-
-        # iii. insert in lamdified nullclines
-        # Values for analytical null clines
-        null_k_val = self.null_k_func_anal(k_tilde_vec,alpha_val,delta_val,g_val, n_val, phi_val, sK_val)
-        null_h_val = self.null_h_func_anal(k_tilde_vec,alpha_val,delta_val,g_val, n_val, phi_val, sH_val)
-
-        # d. plot results
-        fig = plt.figure()
-        ax = fig.add_subplot(1,1,1)
-        ax.clear()
-        ax.plot(k_tilde_vec, null_k_val, label = r'$ \Delta \tilde{k}_t = 0$')
-        ax.plot(k_tilde_vec, null_h_val, label = r'$ \Delta \tilde{h}_t = 0$')
-        ax.plot(k_t, h_t, label='simulation', linestyle = "dotted", linewidth = 2)
-        ax.set_xlabel(r'$\tilde{k}_t$',)
-        ax.set_ylabel(r'$\tilde{h}_t$',)
-
-        ax.legend(loc='upper left')
-        plt.plot()
-    
-    def plot_convergence_interactive(self):
-        out2=widgets.interact(self.plot_convergence, H_init = widgets.SelectionSlider(options=np.linspace(0,50,51), value=40),
-                            K_init = widgets.SelectionSlider(options=np.linspace(0,50,51), value=15))
-        return display(out2)
