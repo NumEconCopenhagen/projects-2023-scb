@@ -45,9 +45,22 @@ class Solow():
 
     
     def find_steady_state(self, sK=0.2, sH=0.15, tol=1e-6, do_print=False):
-        sim_out = self.sim_out = SimpleNamespace()
-        par = self.par
+        """
+        Returns: 
+        sim_out: namespace, contains simulated variables, used parameters, and index of when 
+                            in steady state for all periods from 0 to T-1.  
+            
+        Args: 
+        sK: float, savings rate for physical capital.
+        sH: float, savings rate for human capital.
+        tol: float, tolerance for when in steady state.
+        do_print: bool, print what period steady state is reached. 
+        """
 
+        par = self.par
+        sim_out = self.sim_out = SimpleNamespace() # make empty simulation
+
+        # a. pre-allocate memory
         A = np.empty(par.simT)
         K = np.empty(par.simT)
         H = np.empty(par.simT)
@@ -60,36 +73,43 @@ class Solow():
         
         steady_state_periods = []
 
-        for i,j in zip([A,K,H,L], [par.A_init, par.K_init,par.H_init,par.L_init]):
+        # b. allocate initial values for A,L,K,H.
+        for i,j in zip([A,L,K,H], [par.A_init, par.L_init, par.K_init, par.H_init]):
             i[0] = j
         
+        
+        # c. do simulation for all periods
         t = 0
         while t < par.simT - 1:
 
+            # i. calculate values for period t that are reliant on A,L,K,H.   
             if par.production_function == 'cobb-douglas':
                 Y[t] = (K[t]**par.alpha)*(H[t]**par.phi)*(A[t]*L[t])**(1-par.alpha-par.phi)
             else:
                 Y[t] = np.nan
 
-            A[t+1] = A[t]*(1+par.g)     
-            L[t+1] = L[t]*(1+par.n) 
-
-            H[t+1] = Y[t]*sH + (1-par.delta)*H[t]
-            K[t+1] = Y[t]*sK + (1-par.delta)*K[t]
-            
             y_tilde[t] = Y[t]/(A[t]*L[t])
             k_tilde[t] = K[t]/(A[t]*L[t])
             h_tilde[t] = H[t]/(A[t]*L[t])
             y_t[t] = Y[t]/L[t]
 
+            # ii. check if in steady state.  
             if (t>1) and (abs(k_tilde[t]-k_tilde[t-1]) < tol) and (abs(h_tilde[t]-h_tilde[t-1]) < tol):
-                steady_state_periods += [t]
+                steady_state_periods += [t] # all instances in t, when in steady state. 
                 if (do_print == True) and (t == steady_state_periods[0]):
                     print(f"Steady state reached in period {t}") 
+            
+            # iii. calculate values for next period of A,L,K,H. 
+            A[t+1] = A[t]*(1+par.g)     
+            L[t+1] = L[t]*(1+par.n) 
+            K[t+1] = Y[t]*sK + (1-par.delta)*K[t]
+            H[t+1] = Y[t]*sH + (1-par.delta)*H[t]
+
             t += 1
-        # (t)
-        # (y_tilde)
-        sim_out.y_tilde = y_tilde [:t-1]
+
+        # d. insert in namespace simulation
+        # i. variables 
+        sim_out.y_tilde = y_tilde[:t-1]
         sim_out.k_tilde = k_tilde[:t-1]
         sim_out.h_tilde = h_tilde[:t-1]
         sim_out.y_t = y_t[:t-1]
@@ -97,156 +117,38 @@ class Solow():
         sim_out.K = K[:t-1]
         sim_out.H = H[:t-1]
         sim_out.L = L[:t-1]
-        sim_out.steadystate_t = steady_state_periods[0]
 
-        sim_out.t = np.linspace(0, len(y_tilde[:t-1]), 1)
-
+        # ii. used parameters and index
         sim_out.sK = sK
         sim_out.sH = sH 
+        sim_out.steadystate_t = steady_state_periods[0]
 
         return sim_out
     
     def anal_steady_state(self):
-        anal_sol = self.sim_out = SimpleNamespace()
+        """
+        Returns: 
+        anal_sol: namespace, contains analytical steady state solutions for all relevant tilde-variables.    
+
+        """
+        anal_sol = self.anal_sol = SimpleNamespace() #empty 
         par = self.par 
 
-        u = par.n + par.g + par.delta + par.g*par.n
-
+        u = par.n + par.g + par.delta + par.g*par.n # to ease the length of the analytic calculations
+    
         anal_sol.k_tilde = (par.sK/u)**((1-par.phi)/(1-par.phi-par.alpha))*(par.sH/u)**(par.phi/(1-par.phi-par.alpha))
         anal_sol.h_tilde = (par.sH/u)**((1-par.alpha)/(1-par.phi-par.alpha))*(par.sK/u)**(par.alpha/(1-par.phi-par.alpha))
         anal_sol.y_tilde = anal_sol.k_tilde**par.alpha*anal_sol.h_tilde**par.phi
 
         return anal_sol 
-
-    def cons_t(self, sK=0.2, sH=0.15):
-            
-            """returns consumption from """
-            sim_out= self.find_steady_state(sK=sK, sH=sH)
-            y_t = sim_out.y_t
-            consumption_t_vector = (1-sK-sH)*y_t
-            return consumption_t_vector
     
-    def negative_cons(self, x):
-        sim_result = self.cons_t(sK=x[0], sH=x[1])
-        ct = -1 * sim_result[-1]
-        return ct
-
-    def find_opt_s(self, discrete=True, discrete_sqrt_iter=50):
-        """
-        Returns: optimal savings rate for human and non human capital and consumption in period T
-            
-        Args: 
-        discrete: bool, if True returns discrete solution from a grid search.
-                        if False: Returns solution using scipy optimize. 
-        discrete_sqrt_iter: square root of iterations in grid search for discrete solution.
-
-        """
-        self.sol_save = SimpleNamespace() #initialize simple namespace for solution
-        sol_save = self.sol_save
-
-        if discrete == True: 
-            s_K = np.linspace(1e-8, 1, discrete_sqrt_iter) # Vector of possible capital saving rates
-            s_H = np.linspace(1e-8, 1, discrete_sqrt_iter)  # Vector of possible human capital saving rates
-
-            sk_res = [] #result vector
-            sh_res = []
-            cons_res = []            
-            for i in s_K:
-                for x in s_H:
-                    if i + x >= 1: # constraint on saving rates
-                        pass
-                    else:
-                        sk_res += [i]
-                        sh_res += [x]
-                        cons = self.cons_t(sK=i, sH=x);
-                        cons_res += [cons[-1]]
-
-            optimal_cons_t = np.max(cons_res) # find optimal solution
-            index = cons_res.index(optimal_cons_t) # index of optimal solution
-            sk_opt = sk_res[index] # save corresponding solution for s_K
-            sh_opt = sk_res[index] # save corresponding solution for s_H
-
-            (f"Optimal savings rates are sK = {sk_opt} and sH = {sh_opt}")
-            sol_save.sK_opt = sk_opt # save optimal savings rate 
-            sol_save.sH_opt = sh_opt # save optimal savings rate
-            sol_save.cons_T_opt = optimal_cons_t #save optimal consumption in period T 
-            sol_save.cons_T = cons_res
-            sol_save.sK = sk_res
-            sol_save.sH = sk_res
-            return  sol_save
-        
-        else: 
-            ("Optimal savings rate continoues solution")
-            
-            x0 = [0.2, 0.2] #initial values for optimisation
-            cons = ({'type': 'ineq', 'fun': lambda x:  1- x[0] - x[1]}) #constraint (actually not used with 'Nelder-Mead' where a penalty function could have been implemented instead)
-            bnds = ((1e-3,1), (1e-3, 1)) # bounds on the saving rates
-            solcont = optimize.minimize(self.negative_cons, x0=x0, constraints=cons, bounds=bnds, method='Nelder-Mead') # call optimizer
-
-            # pack solutions in namespace 
-            sol_save.sK = solcont.x[0]
-            sol_save.sH = solcont.x[1]
-            sol_save.cons_t = solcont.fun
-
-            return sol_save
-        
-    def plotbaseline_vs_new_sh(self, new_sH):
-        """
-        Returns: interactive plot comparing baseline with the post shock
-        
-        Args: New sH value not larger than 1 or smaller than 0.
-        
-        """
-        par = self.par
-        par.A_init = 1
-        par.K_init = 1
-        par.H_init = 1
-        par.L_init = 1
-
-        baseline_result = self.find_steady_state(sK=0.2, sH=0.15)
-        
-        ss_t = baseline_result.steadystate_t
-
-        baseline_result.y_tilde = baseline_result.y_tilde[ss_t:]
-        baseline_result.k_tilde = baseline_result.k_tilde[ss_t:]
-        baseline_result.h_tilde = baseline_result.h_tilde[ss_t:]
-
-        
-        self.par.A_init = baseline_result.A[ss_t]
-        self.par.K_init = baseline_result.K[ss_t]
-        self.par.L_init = baseline_result.L[ss_t]
-        self.par.H_init = baseline_result.H[ss_t]
-
-        post_shock = self.find_steady_state(sK=0.2, sH=new_sH, do_print=False)
-
-        post_shock_periods_index = int(self.par.simT)- 2 - len(baseline_result.k_tilde)
-        
-        post_shock.y_tilde  =  post_shock.y_tilde[:-post_shock_periods_index]
-        post_shock.k_tilde  =  post_shock.k_tilde[:-post_shock_periods_index]
-        post_shock.h_tilde  =  post_shock.h_tilde[:-post_shock_periods_index]
-        plt.close('all')
-        fig, ax = plt.subplots(nrows=1, ncols=1, dpi=120)
-        ax.clear()
-        ax.plot(baseline_result.y_tilde, label='y_tilde baseline')
-        ax.plot(post_shock.y_tilde, label='y_tilde post shock')
-        ax.plot(baseline_result.k_tilde, label='k_tilde baseline')
-        ax.plot(post_shock.k_tilde, label='k_tilde post shock')
-        ax.plot(baseline_result.h_tilde, label = 'h_tilde baseline')
-        ax.plot(post_shock.h_tilde, label = 'h_tilde post shock')
-
-        ax.legend(loc='upper right')
-        plt.plot()
-
-
-   
-    def plotbaseline_vs_new_sh_intactive(self):
-        out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=widgets.SelectionSlider(options=np.linspace(0,0.15,40), value=0.15))
-        return display(out)
+    def null_k_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_K):
+        # analytical nullcline for k  
+        return (ktilde_t**(1 - alpha)*(delta + g*n + g + n)/s_K)**(phi**(-1.0))
     
-    def null_k_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_K):  # analytical nullcline for k
-            return (ktilde_t**(1 - alpha)*(delta + g*n + g + n)/s_K)**(phi**(-1.0))
-    def null_h_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_H): # analytical nullcline for h
-            return (ktilde_t**(-alpha)*(delta + g*n + g + n)/s_H)**((phi - 1)**(-1.0))
+    def null_h_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_H): 
+        # analytical nullcline for h
+        return (ktilde_t**(-alpha)*(delta + g*n + g + n)/s_H)**((phi - 1)**(-1.0))
 
 
     def plot_convergence(self, H_init, K_init):
@@ -257,7 +159,7 @@ class Solow():
         Args: 
         discrete, float, initial values for K and H
         
-        NOTE:  Requires defined analytical functions for null clines """
+        """
         
         par = self.par 
 
@@ -282,7 +184,7 @@ class Solow():
         sH_val = sim_out.sH
 
         # ii. find range of k_tilde for plot
-        k_tilde_vec = np.linspace(1e-10, max(k_t)+1, 100)
+        k_tilde_vec = np.linspace(1e-10, max(k_t)+5, 100)
 
         # iii. insert in lamdified nullclines
         # Values for analytical null clines
@@ -303,6 +205,170 @@ class Solow():
         plt.plot()
     
     def plot_convergence_interactive(self):
-        out2=widgets.interact(self.plot_convergence, H_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5),
-                            K_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5))
+        out2=widgets.interact(self.plot_convergence, H_init = widgets.SelectionSlider(options=np.linspace(0,50,51), value=40),
+                            K_init = widgets.SelectionSlider(options=np.linspace(0,50,51), value=15))
         return display(out2)
+
+    def cons_t(self, sK=0.2, sH=0.15):
+        """
+        Returns: consumption vector from simulation 
+
+        """
+
+        sim_out= self.find_steady_state(sK=sK, sH=sH)
+        y_t = sim_out.y_t
+        consumption_t_vector = (1-sK-sH)*y_t
+        return consumption_t_vector
+    
+    def negative_cons(self, x):
+        """
+        Returns: negative value of consumption from last period in simulation.
+        """
+
+        sim_result = self.cons_t(sK=x[0], sH=x[1])
+        ct = -1 * sim_result[-1]
+        return ct
+
+    def find_opt_s(self, discrete=True, discrete_sqrt_iter=50):
+        """
+        Returns: optimal savings rate for human and non human capital and consumption in period T
+            
+        Args: 
+        discrete: bool, if True: returns discrete solution from a grid search.
+                        if False: returns solution using scipy optimize. 
+        discrete_sqrt_iter: square root of iterations in grid search for discrete solution.
+
+        """
+        sol_save = self.sol_save = SimpleNamespace() #initialize namespace for solution
+
+        if discrete == True: 
+            # a. vector of possible savings rates (physical- and human capital)
+            s_K = np.linspace(1e-8, 1, discrete_sqrt_iter)
+            s_H = np.linspace(1e-8, 1, discrete_sqrt_iter)  
+
+            # b. loop throug possible combinations
+            sk_res = []  # result vectors
+            sh_res = []
+            cons_res = []            
+            for i in s_K:
+                for x in s_H:
+                    if i + x >= 1: # constraint on saving rates
+                        pass
+                    else:
+                        sk_res += [i]
+                        sh_res += [x]
+                        cons = self.cons_t(sK=i, sH=x); # calculate consumption from simulation
+                        cons_res += [cons[-1]] # extract last period
+
+            # c. extract solution from simulation 
+            # i. find optimal solution and index 
+            optimal_cons_t = np.max(cons_res) 
+            index = cons_res.index(optimal_cons_t)
+
+            # ii. find optimal values for sK and sH
+            sk_opt = sk_res[index]
+            sh_opt = sk_res[index]
+
+            # d. insert solution values in namespace 
+            sol_save.sK_opt = sk_opt 
+            sol_save.sH_opt = sh_opt 
+            sol_save.cons_T_opt = optimal_cons_t 
+
+            return  sol_save 
+        
+        else: 
+            ("Optimal savings rate continoues solution")
+            
+            # a. objective function (to minimize)
+            def penalty(x):
+
+                # i. unpack
+                sK = x[0]
+                sH = x[1]
+                
+                # ii. penalty
+                penalty = 0
+                S = sK+sH # total savings share 
+                if S > 1: # savings share > possible income -> not allowed (loan not possible) 
+                    fac = 1/S # fac < 1 if too high expenses
+                    penalty += 1000*(S-1) # calculate penalty        
+                    sK *= fac # force S = 1
+                    sH *= fac # force S = 1
+                    
+                return self.negative_cons(x) + penalty
+
+            # b. set initial values and solver 
+            x0 = [0.2, 0.2] # [sK, sH]
+            bnds = ((1e-3,1), (1e-3, 1))
+
+            # c. call solver
+            solcont = optimize.minimize(penalty, 
+                                        x0=x0, 
+                                        bounds=bnds, 
+                                        method='Nelder-Mead') # call optimizer
+
+            # d. insert solutions in namespace 
+            sol_save.sK_opt = solcont.x[0]
+            sol_save.sH_opt = solcont.x[1]
+            sol_save.cons_t = -solcont.fun
+
+            return sol_save
+        
+    def plotbaseline_vs_new_sh(self, new_sH):
+        """
+        Returns: Plot comparing baseline with the post shock (change in sH)
+        
+        Args: New sH value not larger than 1 or smaller than 0.
+        """
+
+        par = self.par
+
+        # a. genereate baseline results 
+        # i. set starting values to baseline
+        par.A_init = 1
+        par.K_init = 1
+        par.H_init = 1
+        par.L_init = 1
+
+        # ii. find steady state 
+        baseline_result = self.find_steady_state(sK=0.2, sH=0.15)
+        
+        # iii. unpack solution for baseline 
+        ss_t = baseline_result.steadystate_t # period when in ss. 
+        baseline_result.y_tilde = baseline_result.y_tilde[ss_t:] # values in steady state
+        baseline_result.k_tilde = baseline_result.k_tilde[ss_t:]
+        baseline_result.h_tilde = baseline_result.h_tilde[ss_t:]
+
+        # b. generate shock after steady state change 
+        # i. set starting values to SS-values from baseline. 
+        self.par.A_init = baseline_result.A[ss_t]
+        self.par.K_init = baseline_result.K[ss_t]
+        self.par.L_init = baseline_result.L[ss_t]
+        self.par.H_init = baseline_result.H[ss_t]
+
+        # ii. find steady state with new sH.
+        post_shock = self.find_steady_state(sK=0.2, sH=new_sH, do_print=False)
+
+        # iii. extract only the amount of periods as in baseline_result.
+        post_shock_periods_index = int(par.simT) - len(baseline_result.k_tilde) 
+        post_shock.y_tilde  =  post_shock.y_tilde[:-post_shock_periods_index]
+        post_shock.k_tilde  =  post_shock.k_tilde[:-post_shock_periods_index]
+        post_shock.h_tilde  =  post_shock.h_tilde[:-post_shock_periods_index]
+
+        # c. plot results from a. and b. 
+        fig, ax = plt.subplots(nrows=1, ncols=1, dpi=120)
+
+        colors = ['red', 'black', 'orange']  # Set different colors for each variable
+        ax.plot(baseline_result.y_tilde, label='y_tilde baseline', linestyle='--', color=colors[0])
+        ax.plot(post_shock.y_tilde, label='y_tilde post shock', color=colors[0])
+        ax.plot(baseline_result.k_tilde, label='k_tilde baseline', linestyle='--', color=colors[1])
+        ax.plot(post_shock.k_tilde, label='k_tilde post shock', color=colors[1])
+        ax.plot(baseline_result.h_tilde, label='h_tilde baseline', linestyle='--', color=colors[2])
+        ax.plot(post_shock.h_tilde, label='h_tilde post shock', color=colors[2])
+
+        ax.legend(loc='center left', bbox_to_anchor = (1, 0.5))
+        plt.plot()
+
+    def plotbaseline_vs_new_sh_intactive(self):
+        out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=widgets.SelectionSlider(options=np.linspace(0,0.3,31), value=0.12))
+        return display(out)
