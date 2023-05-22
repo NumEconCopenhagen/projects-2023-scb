@@ -3,6 +3,7 @@ from types import SimpleNamespace
 
 import numpy as np
 from scipy import optimize
+from scipy.interpolate import griddata
 
 import pandas as pd 
 import matplotlib.pyplot as plt
@@ -264,3 +265,29 @@ class HouseholdSpecializationModelClass:
         assert res.success
         error_ = obj(res.x, parnames, do_print=True)
         return error_
+    
+
+    def mutipleplots(self, error_cutoff, data, rows=1, cols=4):
+        """ 
+        Key args: error cutoff: Maximum error allowed in plot, data = pandas Dataframe, rows=1, cols=4 (nrows*ncols should be == len(errorcutoff))
+        Returns: 3d plots for different error levels.
+        """
+        fig, axes = plt.subplots(nrows=rows, ncols=cols, figsize=(20, 5))
+        for ax in axes: #loop removes odd frame around the plots
+            ax.set_xticks([])
+            ax.set_yticks([])
+            ax.set_frame_on(False)
+        for i, error_limit in enumerate(error_cutoff):
+            df = data[data['error'] < error_limit]
+            ax = axes[i]
+            ax = fig.add_subplot(1,4, i+1, projection='3d', )  # create a 3d type axis
+            x1 = np.linspace(df['alpha'].min(), df['alpha'].max(), len(df['alpha'].unique()))
+            y1 = np.linspace(df['sigma'].min(), df['sigma'].max(), len(df['sigma'].unique()))
+            x2, y2 = np.meshgrid(x1, y1)
+            ax.set_xlabel('alpha')
+            ax.set_ylabel('sigma')
+            ax.set_zlabel('error')
+            ax.set_title(f'error restricted to less than {error_limit}')
+            #fig.set_frameon(False)
+            z2 = griddata((df['alpha'], df['sigma']), df['error'], (x2, y2), method='nearest')
+            ax.plot_surface(x2, y2, z2, cmap='coolwarm', rstride=1, cstride=1)
