@@ -308,4 +308,4 @@ class Solow():
     def plot_convergence_interactive(self):
         out=widgets.interact(self.plot_convergence, H_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5),
                             K_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5))
-        return display(out)
+        display(out)
