@@ -142,12 +142,13 @@ class Solow():
 
         return anal_sol 
     
-        def null_k_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_K):
-            # analytical nullcline for k  
-            return (ktilde_t**(1 - alpha)*(delta + g*n + g + n)/s_K)**(phi**(-1.0))
+    def null_k_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_K):
+        # analytical nullcline for k  
+        return (ktilde_t**(1 - alpha)*(delta + g*n + g + n)/s_K)**(phi**(-1.0))
+    
     def null_h_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_H): 
-            # analytical nullcline for h
-            return (ktilde_t**(-alpha)*(delta + g*n + g + n)/s_H)**((phi - 1)**(-1.0))
+        # analytical nullcline for h
+        return (ktilde_t**(-alpha)*(delta + g*n + g + n)/s_H)**((phi - 1)**(-1.0))
 
 
     def plot_convergence(self, H_init, K_init):
@@ -211,7 +212,7 @@ class Solow():
     def cons_t(self, sK=0.2, sH=0.15):
         """
         Returns: consumption vector from simulation 
-        
+
         """
 
         sim_out= self.find_steady_state(sK=sK, sH=sH)
@@ -268,20 +269,13 @@ class Solow():
             sk_opt = sk_res[index]
             sh_opt = sk_res[index]
 
-            # d. insert simulation in namespace 
-            # i. optimal values
+            # d. insert solution values in namespace 
             sol_save.sK_opt = sk_opt 
             sol_save.sH_opt = sh_opt 
             sol_save.cons_T_opt = optimal_cons_t 
 
-            # ii. loop results  
-            sol_save.cons_T = cons_res
-            sol_save.sK = sk_res
-            sol_save.sH = sk_res
-
             return  sol_save 
         
-
         else: 
             ("Optimal savings rate continoues solution")
             
@@ -314,8 +308,8 @@ class Solow():
                                         method='Nelder-Mead') # call optimizer
 
             # d. insert solutions in namespace 
-            sol_save.sK = solcont.x[0]
-            sol_save.sH = solcont.x[1]
+            sol_save.sK_opt = solcont.x[0]
+            sol_save.sH_opt = solcont.x[1]
             sol_save.cons_t = -solcont.fun
 
             return sol_save
@@ -376,5 +370,5 @@ class Solow():
         plt.plot()
 
     def plotbaseline_vs_new_sh_intactive(self):
-        out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=widgets.SelectionSlider(options=np.linspace(0,0.3,31), value=0.10))
+        out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=widgets.SelectionSlider(options=np.linspace(0,0.3,31), value=0.12))
         return display(out)
