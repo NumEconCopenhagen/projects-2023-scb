@@ -250,45 +250,53 @@ class Solow():
             # d. insert solutions in namespace 
             sol_save.sK = solcont.x[0]
             sol_save.sH = solcont.x[1]
-            sol_save.cons_t = solcont.fun
+            sol_save.cons_t = -solcont.fun
 
             return sol_save
         
     def plotbaseline_vs_new_sh(self, new_sH):
         """
-        Returns: interactive plot comparing baseline with the post shock
+        Returns: Plot comparing baseline with the post shock (change in sH)
         
         Args: New sH value not larger than 1 or smaller than 0.
-        
         """
+
         par = self.par
+
+        # a. genereate baseline results 
+        # i. set starting values to baseline
         par.A_init = 1
         par.K_init = 1
         par.H_init = 1
         par.L_init = 1
 
+        # ii. find steady state 
         baseline_result = self.find_steady_state(sK=0.2, sH=0.15)
         
-        ss_t = baseline_result.steadystate_t
-
-        baseline_result.y_tilde = baseline_result.y_tilde[ss_t:]
+        # iii. unpack solution for baseline 
+        ss_t = baseline_result.steadystate_t # period when in ss. 
+        baseline_result.y_tilde = baseline_result.y_tilde[ss_t:] # values in steady state
         baseline_result.k_tilde = baseline_result.k_tilde[ss_t:]
         baseline_result.h_tilde = baseline_result.h_tilde[ss_t:]
 
-        
+        # b. generate shock after steady state change 
+        # i. set starting values to SS-values from baseline. 
         self.par.A_init = baseline_result.A[ss_t]
         self.par.K_init = baseline_result.K[ss_t]
         self.par.L_init = baseline_result.L[ss_t]
         self.par.H_init = baseline_result.H[ss_t]
 
+        # ii. find steady state with new sH.
         post_shock = self.find_steady_state(sK=0.2, sH=new_sH, do_print=False)
 
-        post_shock_periods_index = int(self.par.simT)- 2 - len(baseline_result.k_tilde)
-        
+        # iii. extract only the amount of periods as in baseline_result.
+        post_shock_periods_index = int(par.simT) - len(baseline_result.k_tilde) 
         post_shock.y_tilde  =  post_shock.y_tilde[:-post_shock_periods_index]
         post_shock.k_tilde  =  post_shock.k_tilde[:-post_shock_periods_index]
         post_shock.h_tilde  =  post_shock.h_tilde[:-post_shock_periods_index]
-        plt.close('all')
+
+        # c. plot 
+        # plt.close('all')
         fig, ax = plt.subplots(nrows=1, ncols=1, dpi=120)
         ax.clear()
         ax.plot(baseline_result.y_tilde, label='y_tilde baseline')
@@ -301,10 +309,8 @@ class Solow():
         ax.legend(loc='center left', bbox_to_anchor = (1, 0.5))
         plt.plot()
 
-
-   
     def plotbaseline_vs_new_sh_intactive(self):
-        out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=widgets.SelectionSlider(options=np.linspace(0,0.15,40), value=0.15))
+        out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=widgets.SelectionSlider(options=np.linspace(0,0.3,31), value=0.10))
         return display(out)
     
     def null_k_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_K):
