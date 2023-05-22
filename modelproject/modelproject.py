@@ -45,9 +45,22 @@ class Solow():
 
     
     def find_steady_state(self, sK=0.2, sH=0.15, tol=1e-6, do_print=False):
-        sim_out = self.sim_out = SimpleNamespace()
-        par = self.par
+        """
+        Returns: 
+        sim_out: namespace, contains simulated variables, used parameters, and index of when 
+                            in steady state for all periods from 0 to T-1.  
+            
+        Args: 
+        sK: float, savings rate for physical capital.
+        sH: float, savings rate for human capital.
+        tol: float, tolerance for when in steady state.
+        do_print: bool, print what period steady state is reached. 
+        """
 
+        par = self.par
+        sim_out = self.sim_out = SimpleNamespace() # make empty simulation
+
+        # a. pre-allocate memory
         A = np.empty(par.simT)
         K = np.empty(par.simT)
         H = np.empty(par.simT)
@@ -60,36 +73,43 @@ class Solow():
         
         steady_state_periods = []
 
-        for i,j in zip([A,K,H,L], [par.A_init, par.K_init,par.H_init,par.L_init]):
+        # b. allocate initial values for A,L,K,H.
+        for i,j in zip([A,L,K,H], [par.A_init, par.L_init, par.K_init, par.H_init]):
             i[0] = j
         
+        
+        # c. do simulation for all periods
         t = 0
         while t < par.simT - 1:
 
+            # i. calculate values for period t that are reliant on A,L,K,H.   
             if par.production_function == 'cobb-douglas':
                 Y[t] = (K[t]**par.alpha)*(H[t]**par.phi)*(A[t]*L[t])**(1-par.alpha-par.phi)
             else:
                 Y[t] = np.nan
 
-            A[t+1] = A[t]*(1+par.g)     
-            L[t+1] = L[t]*(1+par.n) 
-
-            H[t+1] = Y[t]*sH + (1-par.delta)*H[t]
-            K[t+1] = Y[t]*sK + (1-par.delta)*K[t]
-            
             y_tilde[t] = Y[t]/(A[t]*L[t])
             k_tilde[t] = K[t]/(A[t]*L[t])
             h_tilde[t] = H[t]/(A[t]*L[t])
             y_t[t] = Y[t]/L[t]
 
+            # ii. check if in steady state.  
             if (t>1) and (abs(k_tilde[t]-k_tilde[t-1]) < tol) and (abs(h_tilde[t]-h_tilde[t-1]) < tol):
-                steady_state_periods += [t]
+                steady_state_periods += [t] # all instances in t, when in steady state. 
                 if (do_print == True) and (t == steady_state_periods[0]):
                     print(f"Steady state reached in period {t}") 
+            
+            # iii. calculate values for next period of A,L,K,H. 
+            A[t+1] = A[t]*(1+par.g)     
+            L[t+1] = L[t]*(1+par.n) 
+            K[t+1] = Y[t]*sK + (1-par.delta)*K[t]
+            H[t+1] = Y[t]*sH + (1-par.delta)*H[t]
+
             t += 1
-        # (t)
-        # (y_tilde)
-        sim_out.y_tilde = y_tilde [:t-1]
+
+        # d. insert in namespace simulation
+        # i. variables 
+        sim_out.y_tilde = y_tilde[:t-1]
         sim_out.k_tilde = k_tilde[:t-1]
         sim_out.h_tilde = h_tilde[:t-1]
         sim_out.y_t = y_t[:t-1]
@@ -97,21 +117,25 @@ class Solow():
         sim_out.K = K[:t-1]
         sim_out.H = H[:t-1]
         sim_out.L = L[:t-1]
-        sim_out.steadystate_t = steady_state_periods[0]
 
-        sim_out.t = np.linspace(0, len(y_tilde[:t-1]), 1)
-
+        # ii. used parameters and index
         sim_out.sK = sK
         sim_out.sH = sH 
+        sim_out.steadystate_t = steady_state_periods[0]
 
         return sim_out
     
     def anal_steady_state(self):
-        anal_sol = self.sim_out = SimpleNamespace()
+        """
+        Returns: 
+        anal_sol: namespace, contains analytical steady state solutions for all relevant tilde-variables.    
+
+        """
+        anal_sol = self.anal_sol = SimpleNamespace() #empty 
         par = self.par 
 
-        u = par.n + par.g + par.delta + par.g*par.n
-
+        u = par.n + par.g + par.delta + par.g*par.n # to ease the length of the analytic calculations
+    
         anal_sol.k_tilde = (par.sK/u)**((1-par.phi)/(1-par.phi-par.alpha))*(par.sH/u)**(par.phi/(1-par.phi-par.alpha))
         anal_sol.h_tilde = (par.sH/u)**((1-par.alpha)/(1-par.phi-par.alpha))*(par.sK/u)**(par.alpha/(1-par.phi-par.alpha))
         anal_sol.y_tilde = anal_sol.k_tilde**par.alpha*anal_sol.h_tilde**par.phi
@@ -119,14 +143,21 @@ class Solow():
         return anal_sol 
 
     def cons_t(self, sK=0.2, sH=0.15):
+        """
+        Returns: consumption vector from simulation 
             
-            """returns consumption from """
-            sim_out= self.find_steady_state(sK=sK, sH=sH)
-            y_t = sim_out.y_t
-            consumption_t_vector = (1-sK-sH)*y_t
-            return consumption_t_vector
+        """
+
+        sim_out= self.find_steady_state(sK=sK, sH=sH)
+        y_t = sim_out.y_t
+        consumption_t_vector = (1-sK-sH)*y_t
+        return consumption_t_vector
     
     def negative_cons(self, x):
+        """
+        Returns: negative value of consumption from last period in simulation.
+        """
+
         sim_result = self.cons_t(sK=x[0], sH=x[1])
         ct = -1 * sim_result[-1]
         return ct
@@ -136,13 +167,12 @@ class Solow():
         Returns: optimal savings rate for human and non human capital and consumption in period T
             
         Args: 
-        discrete: bool, if True returns discrete solution from a grid search.
-                        if False: Returns solution using scipy optimize. 
+        discrete: bool, if True: returns discrete solution from a grid search.
+                        if False: returns solution using scipy optimize. 
         discrete_sqrt_iter: square root of iterations in grid search for discrete solution.
 
         """
-        self.sol_save = SimpleNamespace() #initialize simple namespace for solution
-        sol_save = self.sol_save
+        sol_save = self.sol_save = SimpleNamespace() #initialize simple namespace for solution
 
         if discrete == True: 
             s_K = np.linspace(1e-8, 1, discrete_sqrt_iter) # Vector of possible capital saving rates
@@ -234,7 +264,7 @@ class Solow():
         ax.plot(baseline_result.h_tilde, label = 'h_tilde baseline')
         ax.plot(post_shock.h_tilde, label = 'h_tilde post shock')
 
-        ax.legend(loc='upper right')
+        ax.legend(loc='center left', bbox_to_anchor = (1, 0.5))
         plt.plot()
 
 
@@ -243,9 +273,11 @@ class Solow():
         out=widgets.interact(self.plotbaseline_vs_new_sh, new_sH=widgets.SelectionSlider(options=np.linspace(0,0.15,40), value=0.15))
         return display(out)
     
-    def null_k_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_K):  # analytical nullcline for k
+    def null_k_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_K):
+            # analytical nullcline for k  
             return (ktilde_t**(1 - alpha)*(delta + g*n + g + n)/s_K)**(phi**(-1.0))
-    def null_h_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_H): # analytical nullcline for h
+    def null_h_func_anal(self, ktilde_t, alpha, delta, g, n, phi, s_H): 
+            # analytical nullcline for h
             return (ktilde_t**(-alpha)*(delta + g*n + g + n)/s_H)**((phi - 1)**(-1.0))
 
 
@@ -257,7 +289,7 @@ class Solow():
         Args: 
         discrete, float, initial values for K and H
         
-        NOTE:  Requires defined analytical functions for null clines """
+        """
         
         par = self.par 
 
@@ -282,7 +314,7 @@ class Solow():
         sH_val = sim_out.sH
 
         # ii. find range of k_tilde for plot
-        k_tilde_vec = np.linspace(1e-10, max(k_t)+1, 100)
+        k_tilde_vec = np.linspace(1e-10, max(k_t)+5, 100)
 
         # iii. insert in lamdified nullclines
         # Values for analytical null clines
@@ -303,6 +335,6 @@ class Solow():
         plt.plot()
     
     def plot_convergence_interactive(self):
-        out2=widgets.interact(self.plot_convergence, H_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5),
-                            K_init = widgets.SelectionSlider(options=np.linspace(0,5,40), value=5))
+        out2=widgets.interact(self.plot_convergence, H_init = widgets.SelectionSlider(options=np.linspace(0,50,51), value=40),
+                            K_init = widgets.SelectionSlider(options=np.linspace(0,50,51), value=15))
         return display(out2)
