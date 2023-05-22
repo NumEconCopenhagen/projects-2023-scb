@@ -257,7 +257,7 @@ class HouseholdSpecializationModelClass:
 
         par = self.par
         # objective function = loss function
-        def obj(x, parnames, do_print=False): 
+        def obj(x, parnames, do_print=True): 
                # a. update parameters
              for xval,parname in zip(x,parnames):
                  par.__dict__[parname] = xval
