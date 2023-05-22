@@ -31,7 +31,7 @@ def plot_stock_interactive(merge_final):
     out = Output()
     with out:
         def plot_stock_index(stock_index, start_date=min(merge_final.date), end_date=max(merge_final.date)):
-            clear_output()
+            #clear_output()
             vertical_lines = merge_final.loc[merge_final.easter_week==1, 'date'].to_numpy()
             y_max = 0.075 # Choose value y axis maximum
             y_min = -0.11 # Choose value y axis minimum
@@ -42,7 +42,7 @@ def plot_stock_interactive(merge_final):
                 x = merge_final.loc[I, 'date'] # x values
                 y = merge_final.loc[I, f'daily_return_{stock_index}'] # y-values
                 ax.set_ylim(y_min, y_max) # set y axis limits
-                ax.plot(x, y, linewidth=1) # plot
+                ax.plot(x, y, linewidth=1, label=stock_index) # plot
                 ax.set_xlim(start_date, end_date) # set x axis limits
                 ax.set_xticks(x[::len(merge_final.loc[I,:])//7]) #set x ticks to vary with chose periode
                 ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
@@ -61,7 +61,7 @@ def plot_stock_interactive(merge_final):
                     x = merge_final.loc[I, 'date']
                     y = merge_final.loc[I, f'daily_return_{i}']
                     ax.set_ylim(y_min, y_max)
-                    ax.plot(x, y, linewidth=1)
+                    ax.plot(x, y, linewidth=1, label = i)
                     clear_output()
                 ax.set_xlim(start_date, end_date)
                 ax.set_xticks(x[::len(merge_final.loc[I,:])//7])
