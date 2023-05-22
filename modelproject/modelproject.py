@@ -200,6 +200,7 @@ class Solow():
         ax.plot(k_t, h_t, label='simulation', linestyle = "dotted", linewidth = 2)
         ax.set_xlabel(r'$\tilde{k}_t$',)
         ax.set_ylabel(r'$\tilde{h}_t$',)
+        ax.set_title('Fig 4. Path to steady state', size=12)
 
         ax.legend(loc='upper left')
         plt.plot()
@@ -365,6 +366,7 @@ class Solow():
         ax.plot(post_shock.k_tilde, label='k_tilde post shock', color=colors[1])
         ax.plot(baseline_result.h_tilde, label='h_tilde baseline', linestyle='--', color=colors[2])
         ax.plot(post_shock.h_tilde, label='h_tilde post shock', color=colors[2])
+        ax.set_title('Fig 5. Effect of a shock to savings', size = 12)
 
         ax.legend(loc='center left', bbox_to_anchor = (1, 0.5))
         plt.plot()
