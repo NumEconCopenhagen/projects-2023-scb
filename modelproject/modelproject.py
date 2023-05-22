@@ -172,13 +172,15 @@ class Solow():
         discrete_sqrt_iter: square root of iterations in grid search for discrete solution.
 
         """
-        sol_save = self.sol_save = SimpleNamespace() #initialize simple namespace for solution
+        sol_save = self.sol_save = SimpleNamespace() #initialize namespace for solution
 
         if discrete == True: 
-            s_K = np.linspace(1e-8, 1, discrete_sqrt_iter) # Vector of possible capital saving rates
-            s_H = np.linspace(1e-8, 1, discrete_sqrt_iter)  # Vector of possible human capital saving rates
+            # a. vector of possible savings rates (physical- and human capital)
+            s_K = np.linspace(1e-8, 1, discrete_sqrt_iter)
+            s_H = np.linspace(1e-8, 1, discrete_sqrt_iter)  
 
-            sk_res = [] #result vector
+            # b. loop throug possible combinations
+            sk_res = []  # result vectors
             sh_res = []
             cons_res = []            
             for i in s_K:
@@ -188,32 +190,64 @@ class Solow():
                     else:
                         sk_res += [i]
                         sh_res += [x]
-                        cons = self.cons_t(sK=i, sH=x);
-                        cons_res += [cons[-1]]
+                        cons = self.cons_t(sK=i, sH=x); # calculate consumption from simulation
+                        cons_res += [cons[-1]] # extract last period
 
-            optimal_cons_t = np.max(cons_res) # find optimal solution
-            index = cons_res.index(optimal_cons_t) # index of optimal solution
-            sk_opt = sk_res[index] # save corresponding solution for s_K
-            sh_opt = sk_res[index] # save corresponding solution for s_H
+            # c. extract solution from simulation 
+            # i. find optimal solution and index 
+            optimal_cons_t = np.max(cons_res) 
+            index = cons_res.index(optimal_cons_t)
 
-            (f"Optimal savings rates are sK = {sk_opt} and sH = {sh_opt}")
-            sol_save.sK_opt = sk_opt # save optimal savings rate 
-            sol_save.sH_opt = sh_opt # save optimal savings rate
-            sol_save.cons_T_opt = optimal_cons_t #save optimal consumption in period T 
+            # ii. find optimal values for sK and sH
+            sk_opt = sk_res[index]
+            sh_opt = sk_res[index]
+
+            # d. insert simulation in namespace 
+            # i. optimal values
+            sol_save.sK_opt = sk_opt 
+            sol_save.sH_opt = sh_opt 
+            sol_save.cons_T_opt = optimal_cons_t 
+
+            # ii. loop results  
             sol_save.cons_T = cons_res
             sol_save.sK = sk_res
             sol_save.sH = sk_res
-            return  sol_save
+
+            return  sol_save 
         
+
         else: 
             ("Optimal savings rate continoues solution")
             
-            x0 = [0.2, 0.2] #initial values for optimisation
-            cons = ({'type': 'ineq', 'fun': lambda x:  1- x[0] - x[1]}) #constraint (actually not used with 'Nelder-Mead' where a penalty function could have been implemented instead)
-            bnds = ((1e-3,1), (1e-3, 1)) # bounds on the saving rates
-            solcont = optimize.minimize(self.negative_cons, x0=x0, constraints=cons, bounds=bnds, method='Nelder-Mead') # call optimizer
+            # a. objective function (to minimize)
+            def penalty(x):
 
-            # pack solutions in namespace 
+                # i. unpack
+                sK = x[0]
+                sH = x[1]
+                
+                # ii. penalty
+                penalty = 0
+                S = sK+sH # total savings share 
+                if S > 1: # savings share > possible income -> not allowed (loan not possible) 
+                    fac = 1/S # fac < 1 if too high expenses
+                    penalty += 1000*(S-1) # calculate penalty        
+                    sK *= fac # force S = 1
+                    sH *= fac # force S = 1
+                    
+                return self.negative_cons(x) + penalty
+
+            # b. set initial values and solver 
+            x0 = [0.2, 0.2] # [sK, sH]
+            bnds = ((1e-3,1), (1e-3, 1))
+
+            # c. call solver
+            solcont = optimize.minimize(penalty, 
+                                        x0=x0, 
+                                        bounds=bnds, 
+                                        method='Nelder-Mead') # call optimizer
+
+            # d. insert solutions in namespace 
             sol_save.sK = solcont.x[0]
             sol_save.sH = solcont.x[1]
             sol_save.cons_t = solcont.fun
