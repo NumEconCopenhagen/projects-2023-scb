@@ -1,5 +1,4 @@
 # scrape ugenr.dk
-
 import scrapy
 from scrapy.crawler import CrawlerProcess
 import pandas as pd 
@@ -75,8 +74,8 @@ process.start()
 
 # d. make dataset of datastorage.
 
-# directory to store
-foo = '/Users/konradthide/Desktop/Økonomi/6. semester/IntroProg/assignments/projects-2023-scb/dataproject/data'
+# output to store
+foo = 'insert path here'
 
 df = pd.DataFrame(data=zip(year, month, start_date, end_date, uge, dato), columns=['year','month','start_date', 'end_date' ,'uge', 'dato'])
 

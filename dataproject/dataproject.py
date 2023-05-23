@@ -23,7 +23,7 @@ def read_yahoo(input_dir, filename='file.csv'):
 
 def plot_stock_interactive(merge_final):
     """
-    Args: merge_final = cleaned datframe
+    Args: merge_final = cleaned dataframe
 
     Returns interactive plot for cleaned dataframe
     
@@ -31,7 +31,6 @@ def plot_stock_interactive(merge_final):
     out = Output()
     with out:
         def plot_stock_index(stock_index, start_date=min(merge_final.date), end_date=max(merge_final.date)):
-            #clear_output()
             vertical_lines = merge_final.loc[merge_final.easter_week==1, 'date'].to_numpy()
             y_max = 0.075 # Choose value y axis maximum
             y_min = -0.11 # Choose value y axis minimum
@@ -55,14 +54,12 @@ def plot_stock_interactive(merge_final):
                 plt.show()
             elif stock_index == 'both' and start_date <= end_date:
                 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(5,5))
-                ax.clear()
                 I = (merge_final.date>=start_date)&(merge_final.date<=end_date)
                 for i in ['omxs', 'nifty']:
                     x = merge_final.loc[I, 'date']
                     y = merge_final.loc[I, f'daily_return_{i}']
                     ax.set_ylim(y_min, y_max)
                     ax.plot(x, y, linewidth=1, label = i)
-                    clear_output()
                 ax.set_xlim(start_date, end_date)
                 ax.set_xticks(x[::len(merge_final.loc[I,:])//7])
                 ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
