@@ -1,7 +1,4 @@
 
-
-
-
 def V(L, G, bl):
     """
     Calculates the value function.
