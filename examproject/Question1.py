@@ -1,3 +1,5 @@
+import numpy as np
+from scipy import optimize
 
 def V(L, G, bl):
     """
