@@ -152,10 +152,10 @@ def find_opt_G(bl,tau, do_print = False):
         print(tau)
 
     # initialize empty numpy arrays
-    Gs = np.linspace(0e-16,20,1000)
-    Ls = np.empty(1000)
-    diffs = np.empty(1000)
-    utility = np.empty(1000)
+    Gs = np.linspace(0e-16,20,500)
+    Ls = np.empty(500)
+    diffs = np.empty(500)
+    utility = np.empty(500)
     
     # iterate over grid og G
     for i, g in enumerate(Gs):
@@ -172,3 +172,16 @@ def find_opt_G(bl,tau, do_print = False):
     bl.w_tilde = (1-bl.tau)*bl.w
 
     return Gs, Ls, diffs, utility, tau
+
+# optimizer for fixed G
+def sol_G_L(bl, x0):
+    def objective(x):
+        L, tau = x
+        bl.tau = tau
+        G = bl.w*bl.tau*L
+        bl.w_tilde = (1-bl.tau)*bl.w
+        return objective_function(L, bl, G)
+    bnds = ((0, 24), (0, 1))
+    x0 = x0
+    res = optimize.minimize(objective, x0=x0, method='L-BFGS-B', bounds=bnds)
+    return res
